@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'app_router.dart';
 import 'app_routes.dart';
+import 'app_router.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,12 +13,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Brand Xpress Advanced Editor',
-      initialRoute: AppRoutes.splash, // your friend is building this
-      onGenerateRoute: AppRouter.generateRoute,
+
+      title: 'Brand Xpress',
       theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+
+      initialRoute: AppRoutes.splash,  
+      onGenerateRoute: AppRouter.generateRoute,
     );
   }
 }

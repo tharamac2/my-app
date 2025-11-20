@@ -1,55 +1,88 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'controllers/auth_controller.dart';
-import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_textfield.dart';
+import 'widgets/custom_input.dart';
+import 'widgets/primary_button.dart';
 import '../../app_routes.dart';
 
-class SignupPage extends StatelessWidget {
-  SignupPage({super.key});
+class SignupPage extends StatefulWidget {
+  const SignupPage({super.key});
 
+  @override
+  State<SignupPage> createState() => _SignupPageState();
+}
+
+class _SignupPageState extends State<SignupPage> {
   final nameCtrl = TextEditingController();
   final emailCtrl = TextEditingController();
-  final passwordCtrl = TextEditingController();
+  final phoneCtrl = TextEditingController();
+  final passCtrl = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthController>(context);
-
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30),
 
-            Text("Create Account", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            SizedBox(height: 30),
+              Text(
+                "Create Account ✨",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[900],
+                ),
+              ),
+              const SizedBox(height: 6),
 
-            AppTextField(controller: nameCtrl, hint: "Full Name"),
-            SizedBox(height: 15),
+              const Text(
+                "Join us today",
+                style: TextStyle(color: Colors.grey, fontSize: 15),
+              ),
 
-            AppTextField(controller: emailCtrl, hint: "Email"),
-            SizedBox(height: 15),
+              const SizedBox(height: 40),
 
-            AppTextField(controller: passwordCtrl, hint: "Password", obscureText: true),
-            SizedBox(height: 25),
+              CustomInput(label: "Full Name", controller: nameCtrl),
+              const SizedBox(height: 20),
 
-            AppButton(
-              text: auth.isLoading ? "Please wait..." : "Register",
-              onTap: () async {
-                final success = await auth.signup(
-                  name: nameCtrl.text.trim(),
-                  email: emailCtrl.text.trim(),
-                  password: passwordCtrl.text.trim(),
-                );
+              CustomInput(label: "Email", controller: emailCtrl),
+              const SizedBox(height: 20),
 
-                if (success) {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                }
-              },
-            ),
-          ],
+              CustomInput(label: "Phone Number", controller: phoneCtrl),
+              const SizedBox(height: 20),
+
+              CustomInput(
+                label: "Password",
+                controller: passCtrl,
+                isPassword: true,
+              ),
+
+              const SizedBox(height: 30),
+
+              PrimaryButton(
+                text: "Create Account",
+                onPressed: () {},
+              ),
+
+              const SizedBox(height: 30),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Already have an account?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.login);
+                    },
+                    child: const Text("Login"),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

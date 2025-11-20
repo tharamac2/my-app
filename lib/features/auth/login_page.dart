@@ -1,68 +1,95 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'controllers/auth_controller.dart';
-import '../../core/widgets/app_textfield.dart';
-import '../../core/widgets/app_button.dart';
+import 'widgets/custom_input.dart';
+import 'widgets/primary_button.dart';
 import '../../app_routes.dart';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
-  final emailCtrl = TextEditingController();
-  final passwordCtrl = TextEditingController();
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final emailController = TextEditingController();
+  final passController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
-    final auth = Provider.of<AuthController>(context);
-
     return Scaffold(
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            
-            Text("Login", style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
-            SizedBox(height: 30),
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(22),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 30),
 
-            AppTextField(
-              controller: emailCtrl,
-              hint: "Email",
-            ),
+              Text(
+                "Welcome Back 👋",
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue[900],
+                ),
+              ),
 
-            SizedBox(height: 15),
+              const SizedBox(height: 6),
 
-            AppTextField(
-              controller: passwordCtrl,
-              hint: "Password",
-              obscureText: true,
-            ),
+              const Text(
+                "Login to continue",
+                style: TextStyle(color: Colors.grey, fontSize: 15),
+              ),
 
-            SizedBox(height: 25),
+              const SizedBox(height: 40),
 
-            AppButton(
-              text: auth.isLoading ? "Loading..." : "Login",
-              onTap: () async {
-                final success = await auth.login(
-                  emailCtrl.text.trim(),
-                  passwordCtrl.text.trim(),
-                );
+              CustomInput(
+                label: "Email or Phone Number",
+                controller: emailController,
+              ),
 
-                if (success) {
-                  Navigator.pushNamed(context, AppRoutes.home);
-                }
-              },
-            ),
+              const SizedBox(height: 22),
 
-            SizedBox(height: 20),
+              CustomInput(
+                label: "Password",
+                controller: passController,
+                isPassword: true,
+              ),
 
-            GestureDetector(
-              onTap: () {
-                Navigator.pushNamed(context, AppRoutes.signup);
-              },
-              child: Text("Create an account", style: TextStyle(color: Colors.blue)),
-            )
-          ],
+              const SizedBox(height: 14),
+
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () {},
+                  child: const Text("Forgot Password?"),
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              PrimaryButton(
+                text: "Login",
+                onPressed: () {},
+              ),
+
+              const SizedBox(height: 30),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text("Don’t have an account?"),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, AppRoutes.signup);
+                    },
+                    child: const Text("Create Now"),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
