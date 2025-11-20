@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD
+import 'package:go_router/go_router.dart';
 
-class SignupPage extends StatelessWidget {
-  const SignupPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: Text("Signup Page")),
-=======
 import 'widgets/custom_input.dart';
 import 'widgets/primary_button.dart';
-import '../../app_routes.dart';
+import '../../theme/app_routes.dart';
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -74,7 +66,9 @@ class _SignupPageState extends State<SignupPage> {
 
               PrimaryButton(
                 text: "Create Account",
-                onPressed: () {},
+                onPressed: () {
+                  // TODO - Backend signup call
+                },
               ),
 
               const SizedBox(height: 30),
@@ -85,7 +79,7 @@ class _SignupPageState extends State<SignupPage> {
                   const Text("Already have an account?"),
                   TextButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, AppRoutes.login);
+                      context.go(AppRoutes.login); // GoRouter navigation
                     },
                     child: const Text("Login"),
                   ),
@@ -95,7 +89,6 @@ class _SignupPageState extends State<SignupPage> {
           ),
         ),
       ),
->>>>>>> 95497341d0bfd7ca05aadc2e761674c48c399761
     );
   }
 }
