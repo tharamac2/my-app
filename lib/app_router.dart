@@ -11,8 +11,9 @@ class AppRouter {
 
       case AppRoutes.splash:
         return MaterialPageRoute(
-          builder: (_) => const Placeholder(), 
-          // Replace with your friend's real splash screen
+          builder: (_) => const Scaffold(
+            body: Center(child: Text("Splash Loading...")),
+          ),
         );
 
       case AppRoutes.login:
