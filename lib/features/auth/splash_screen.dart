@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../app_routes.dart';
+import '../../theme/app_routes.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
