@@ -1,7 +1,7 @@
 export const Colors = {
     light: {
-        primary: '#134377', // User requested in earlier conversation for the branding
-        secondary: '#D4AF37', // A warm, premium gold for accents
+        primary: '#134377',
+        secondary: '#D4AF37',
         background: '#F9FAFB',
         surface: '#FFFFFF',
         text: '#1F2937',
@@ -10,6 +10,8 @@ export const Colors = {
         error: '#EF4444',
         success: '#10B981',
         tint: '#134377',
+        brandYellow: '#FDBE01',
+        brandDark: '#1E1E1E',
     },
     dark: {
         primary: '#134377',
@@ -22,5 +24,7 @@ export const Colors = {
         error: '#EF4444',
         success: '#10B981',
         tint: '#D4AF37',
+        brandYellow: '#FDBE01',
+        brandDark: '#1E1E1E',
     },
 };
