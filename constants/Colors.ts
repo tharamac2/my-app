@@ -1,0 +1,26 @@
+export const Colors = {
+    light: {
+        primary: '#134377', // User requested in earlier conversation for the branding
+        secondary: '#D4AF37', // A warm, premium gold for accents
+        background: '#F9FAFB',
+        surface: '#FFFFFF',
+        text: '#1F2937',
+        textSecondary: '#6B7280',
+        border: '#E5E7EB',
+        error: '#EF4444',
+        success: '#10B981',
+        tint: '#134377',
+    },
+    dark: {
+        primary: '#134377',
+        secondary: '#D4AF37',
+        background: '#111827',
+        surface: '#1F2937',
+        text: '#F9FAFB',
+        textSecondary: '#9CA3AF',
+        border: '#374151',
+        error: '#EF4444',
+        success: '#10B981',
+        tint: '#D4AF37',
+    },
+};
