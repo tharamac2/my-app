@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
     Dimensions,
@@ -41,7 +41,23 @@ export default function ForgotPasswordScreen() {
     const [otp, setOtp] = useState(['', '', '', '']);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const otpFields = useRef<Array<TextInput | null>>([]);
+
+    const validatePassword = (text: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/.test(text);
+
+    const handleSavePassword = () => {
+        if (!newPassword || !validatePassword(newPassword)) {
+            setPasswordError('Password must be at least 8 chars with 1 uppercase, 1 lowercase, 1 number, and 1 special char');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setPasswordError('Passwords do not match');
+            return;
+        }
+        setPasswordError('');
+        router.replace('/login');
+    };
 
     const handleBack = () => {
         if (step === 'forgot') router.back();
@@ -93,19 +109,10 @@ export default function ForgotPasswordScreen() {
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
-                <Text style={styles.footerLabel}>Don't have an account ?</Text>
-                <TouchableOpacity
-                    style={styles.actionButtonSmall}
-                    onPress={() => router.replace('/login' as any)}
-                >
-                    <Text style={styles.actionButtonTextSmall}>login</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.actionButtonSmall}
-                    onPress={() => router.replace('/register' as any)}
-                >
-                    <Text style={styles.actionButtonTextSmall}>Signup</Text>
-                </TouchableOpacity>
+                <Text style={styles.footerLabel}>Don&apos;t have an account?</Text>
+                <Link href="/register" style={styles.actionButtonTextSmall}>
+                    Signup
+                </Link>
             </View>
         </View>
     );
@@ -130,7 +137,7 @@ export default function ForgotPasswordScreen() {
             </View>
 
             <View style={styles.resendRow}>
-                <Text style={styles.resendLabel}>if you didn't received a code . </Text>
+                <Text style={styles.resendLabel}>if you didn&apos;t received a code . </Text>
                 <TouchableOpacity>
                     <Text style={styles.resendActionText}>Resend</Text>
                 </TouchableOpacity>
@@ -150,31 +157,33 @@ export default function ForgotPasswordScreen() {
         <View style={styles.card}>
             <Text style={styles.cardHeaderTitle}>New Password</Text>
 
-            <View style={[styles.inputContainer, { marginBottom: 30 }]}>
+            <View style={[styles.inputContainer, passwordError ? styles.inputError : null, { marginBottom: 30 }]}>
                 <TextInput
                     style={styles.pillInputNoIcon}
                     placeholder="Enter new password"
                     placeholderTextColor="#999"
                     value={newPassword}
-                    onChangeText={setNewPassword}
+                    onChangeText={(val) => { setNewPassword(val); setPasswordError(''); }}
                     secureTextEntry
                 />
                 <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
             </View>
 
-            <View style={[styles.inputContainer, { marginBottom: 40 }]}>
+            <View style={[styles.inputContainer, passwordError ? styles.inputError : null, { marginBottom: 30 }]}>
                 <TextInput
                     style={styles.pillInputNoIcon}
                     placeholder="Confirm password"
                     placeholderTextColor="#999"
                     value={confirmPassword}
-                    onChangeText={setConfirmPassword}
+                    onChangeText={(val) => { setConfirmPassword(val); setPasswordError(''); }}
                     secureTextEntry
                 />
                 <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
             </View>
 
-            <TouchableOpacity style={styles.primaryButton} onPress={() => router.replace('/login')}>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+            <TouchableOpacity style={styles.primaryButton} onPress={handleSavePassword}>
                 <Text style={styles.primaryButtonText}>Save</Text>
             </TouchableOpacity>
 
@@ -377,5 +386,18 @@ const styles = StyleSheet.create({
         backgroundColor: '#1A1A1A',
         borderRadius: 10,
         alignSelf: 'center',
+    },
+    errorText: {
+        color: '#EF4444',
+        fontSize: 12,
+        marginLeft: 20,
+        marginTop: -15,
+        marginBottom: 15,
+        fontFamily: serifFont,
+        textAlign: 'center',
+    },
+    inputError: {
+        borderColor: '#EF4444',
+        borderWidth: 1,
     },
 });

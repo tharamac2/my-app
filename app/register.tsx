@@ -45,8 +45,59 @@ export default function RegisterScreen() {
     const router = useRouter();
     const [step, setStep] = useState<RegisterStep>('choice');
     const [email, setEmail] = useState('');
+    const [mobileNumber, setMobileNumber] = useState('');
+    const [password, setPassword] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [mobileError, setMobileError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
     const otpFields = useRef<Array<TextInput | null>>([]);
+
+    const validateEmail = (text: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+    const validateMobile = (text: string) => /^[0-9]{10}$/.test(text);
+    const validatePassword = (text: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/.test(text);
+
+    const handleEmailSignup = () => {
+        let valid = true;
+        if (!email || !validateEmail(email)) {
+            setEmailError('Please enter a valid email address');
+            valid = false;
+        } else {
+            setEmailError('');
+        }
+
+        if (!password || !validatePassword(password)) {
+            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+            valid = false;
+        } else {
+            setPasswordError('');
+        }
+
+        if (valid) {
+            setStep('otp');
+        }
+    };
+
+    const handleMobileSignup = () => {
+        let valid = true;
+        if (!mobileNumber || !validateMobile(mobileNumber)) {
+            setMobileError('Mobile number must be exactly 10 digits');
+            valid = false;
+        } else {
+            setMobileError('');
+        }
+
+        if (!password || !validatePassword(password)) {
+            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+            valid = false;
+        } else {
+            setPasswordError('');
+        }
+
+        if (valid) {
+            setStep('otp');
+        }
+    };
 
     const handleBack = () => {
         if (step === 'email' || step === 'phone' || step === 'google') setStep('choice');
@@ -109,26 +160,87 @@ export default function RegisterScreen() {
     const renderEmailInput = () => (
         <View style={styles.card}>
             <View style={styles.topSpacer} />
-            <View style={styles.inputPill}>
+            <View style={[styles.inputPill, emailError ? styles.inputError : null, { marginBottom: 20 }]}>
                 <Ionicons name="mail-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
                 <TextInput
                     style={styles.pillInput}
                     placeholder="Enter your Email address"
                     placeholderTextColor="#999"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(val) => { setEmail(val); setEmailError(''); }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
             </View>
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-            <TouchableOpacity style={styles.primaryPillButton} onPress={() => setStep('otp')}>
+            <View style={[styles.inputPill, passwordError ? styles.inputError : null, { marginBottom: 40 }]}>
+                <Ionicons name="lock-closed-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
+                <TextInput
+                    style={styles.pillInput}
+                    placeholder="Create a password"
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
+                    secureTextEntry
+                />
+                <Ionicons name="eye-off-outline" size={24} color="#1A1A1A" style={styles.inputRightIcon} />
+            </View>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+            <TouchableOpacity style={styles.primaryPillButton} onPress={handleEmailSignup}>
                 <Text style={styles.primaryPillButtonText}>Get OTP</Text>
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
                 <TouchableOpacity onPress={() => setStep('choice')}>
-                    <Text style={styles.actionButtonTextSmall}>Sign up</Text>
+                    <Text style={styles.actionButtonTextSmall}>Back to options</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+
+    const renderPhoneInput = () => (
+        <View style={styles.card}>
+            <View style={styles.topSpacer} />
+
+            <View style={[styles.inputPill, { paddingLeft: 0 }, mobileError ? styles.inputError : null, { marginBottom: 20 }]}>
+                <View style={styles.countryCode}>
+                    <Text style={styles.countryCodeText}>+ 91</Text>
+                </View>
+                <TextInput
+                    style={[styles.pillInput, { paddingLeft: 10 }]}
+                    placeholder="Enter your Mobile number"
+                    placeholderTextColor="#999"
+                    value={mobileNumber}
+                    onChangeText={(val) => { setMobileNumber(val.replace(/[^0-9]/g, '').slice(0, 10)); setMobileError(''); }}
+                    keyboardType="phone-pad"
+                    maxLength={10}
+                />
+            </View>
+            {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
+
+            <View style={[styles.inputPill, passwordError ? styles.inputError : null, { marginBottom: 40 }]}>
+                <Ionicons name="lock-closed-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
+                <TextInput
+                    style={styles.pillInput}
+                    placeholder="Create a password"
+                    placeholderTextColor="#999"
+                    value={password}
+                    onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
+                    secureTextEntry
+                />
+                <Ionicons name="eye-off-outline" size={24} color="#1A1A1A" style={styles.inputRightIcon} />
+            </View>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
+            <TouchableOpacity style={styles.primaryPillButton} onPress={handleMobileSignup}>
+                <Text style={styles.primaryPillButtonText}>Get OTP</Text>
+            </TouchableOpacity>
+
+            <View style={styles.footerRow}>
+                <TouchableOpacity onPress={() => setStep('choice')}>
+                    <Text style={styles.actionButtonTextSmall}>Back to options</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -203,7 +315,7 @@ export default function RegisterScreen() {
                 {renderHeader()}
                 {step === 'choice' && renderChoice()}
                 {step === 'email' && renderEmailInput()}
-                {step === 'phone' && renderEmailInput()}
+                {step === 'phone' && renderPhoneInput()}
                 {step === 'google' && renderGoogleAccount()}
                 {step === 'otp' && renderOtpVerify()}
             </ScrollView>
@@ -435,5 +547,32 @@ const styles = StyleSheet.create({
         backgroundColor: '#1A1A1A',
         borderRadius: 10,
         alignSelf: 'center',
+    },
+    inputRightIcon: {
+        marginLeft: 10,
+    },
+    countryCode: {
+        paddingHorizontal: 20,
+        borderRightWidth: 1,
+        borderRightColor: '#E0E0E0',
+        height: '100%',
+        justifyContent: 'center',
+    },
+    countryCodeText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    errorText: {
+        color: '#EF4444',
+        fontSize: 12,
+        marginLeft: 20,
+        marginTop: -15,
+        marginBottom: 15,
+        fontFamily: serifFont,
+    },
+    inputError: {
+        borderColor: '#EF4444',
+        borderWidth: 1,
     },
 });
