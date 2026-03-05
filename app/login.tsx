@@ -106,7 +106,7 @@ export default function LoginScreen() {
                 <TouchableOpacity onPress={() => setStep('mobile')}>
                     <Text style={styles.linkTextBold}>Login with OTP</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/forgot-password' as any)}>
                     <Text style={styles.linkTextBold}>Forgot Password?</Text>
                 </TouchableOpacity>
             </View>
