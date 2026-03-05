@@ -47,6 +47,7 @@ export default function RegisterScreen() {
     const [email, setEmail] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [mobileError, setMobileError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -182,9 +183,11 @@ export default function RegisterScreen() {
                     placeholderTextColor="#999"
                     value={password}
                     onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                 />
-                <Ionicons name="eye-off-outline" size={24} color="#1A1A1A" style={styles.inputRightIcon} />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputRightIcon}>
+                    <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={24} color="#1A1A1A" />
+                </TouchableOpacity>
             </View>
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 
@@ -228,9 +231,11 @@ export default function RegisterScreen() {
                     placeholderTextColor="#999"
                     value={password}
                     onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                 />
-                <Ionicons name="eye-off-outline" size={24} color="#1A1A1A" style={styles.inputRightIcon} />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputRightIcon}>
+                    <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={24} color="#1A1A1A" />
+                </TouchableOpacity>
             </View>
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 

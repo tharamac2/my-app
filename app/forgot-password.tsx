@@ -41,6 +41,8 @@ export default function ForgotPasswordScreen() {
     const [otp, setOtp] = useState(['', '', '', '']);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [passwordError, setPasswordError] = useState('');
     const otpFields = useRef<Array<TextInput | null>>([]);
 
@@ -164,9 +166,11 @@ export default function ForgotPasswordScreen() {
                     placeholderTextColor="#999"
                     value={newPassword}
                     onChangeText={(val) => { setNewPassword(val); setPasswordError(''); }}
-                    secureTextEntry
+                    secureTextEntry={!showNewPassword}
                 />
-                <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
+                <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.inputRightIcon}>
+                    <Ionicons name={showNewPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#1A1A1A" />
+                </TouchableOpacity>
             </View>
 
             <View style={[styles.inputContainer, passwordError ? styles.inputError : null, { marginBottom: 30 }]}>
@@ -176,9 +180,11 @@ export default function ForgotPasswordScreen() {
                     placeholderTextColor="#999"
                     value={confirmPassword}
                     onChangeText={(val) => { setConfirmPassword(val); setPasswordError(''); }}
-                    secureTextEntry
+                    secureTextEntry={!showConfirmPassword}
                 />
-                <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
+                <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.inputRightIcon}>
+                    <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#1A1A1A" />
+                </TouchableOpacity>
             </View>
 
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
