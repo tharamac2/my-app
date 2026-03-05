@@ -1,6 +1,7 @@
+
 import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
     Dimensions,
@@ -97,13 +98,10 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
-                <Text style={styles.footerLabel}>Already have an account ?</Text>
-                <TouchableOpacity
-                    style={styles.actionButtonSmall}
-                    onPress={() => router.replace('/login' as any)}
-                >
-                    <Text style={styles.actionButtonTextSmall}>login</Text>
-                </TouchableOpacity>
+                <Text style={styles.footerLabel}>Already have an account ? </Text>
+                <Link href="/login" style={styles.actionButtonTextSmall}>
+                    Login
+                </Link>
             </View>
         </View>
     );
@@ -129,11 +127,7 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.footerRow}>
-                <Text style={styles.footerLabel}>Already have an account ?</Text>
-                <TouchableOpacity
-                    style={styles.actionButtonSmall}
-                    onPress={() => setStep('choice')}
-                >
+                <TouchableOpacity onPress={() => setStep('choice')}>
                     <Text style={styles.actionButtonTextSmall}>Sign up</Text>
                 </TouchableOpacity>
             </View>
@@ -155,13 +149,10 @@ export default function RegisterScreen() {
             </TouchableOpacity>
 
             <View style={styles.googleFooter}>
-                <Text style={styles.footerLabel}>Already have an account ?</Text>
-                <TouchableOpacity
-                    style={styles.signupActionBtn}
-                    onPress={() => router.replace('/login' as any)}
-                >
-                    <Text style={styles.signupActionText}>Signup</Text>
-                </TouchableOpacity>
+                <Text style={styles.footerLabel}>Already have an account ? </Text>
+                <Link href="/login" style={styles.signupActionText}>
+                    Login
+                </Link>
             </View>
         </View>
     );
@@ -212,7 +203,7 @@ export default function RegisterScreen() {
                 {renderHeader()}
                 {step === 'choice' && renderChoice()}
                 {step === 'email' && renderEmailInput()}
-                {step === 'phone' && renderEmailInput()} // Phone uses similar UI in prompt
+                {step === 'phone' && renderEmailInput()}
                 {step === 'google' && renderGoogleAccount()}
                 {step === 'otp' && renderOtpVerify()}
             </ScrollView>

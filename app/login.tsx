@@ -1,6 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
     Dimensions,
@@ -119,13 +119,10 @@ export default function LoginScreen() {
             </TouchableOpacity>
 
             <View style={styles.footer}>
-                <Text style={styles.footerText}>Don't have an account?</Text>
-                <TouchableOpacity
-                    style={styles.signupButtonSmall}
-                    onPress={() => router.push('/register' as any)}
-                >
-                    <Text style={[styles.linkTextBold, { fontSize: 16 }]}>Signup</Text>
-                </TouchableOpacity>
+                <Text style={styles.footerText}>Don&apos;t have an account? </Text>
+                <Link href="/register" style={[styles.linkTextBold, { fontSize: 16 }]}>
+                    Signup
+                </Link>
             </View>
         </View>
     );
