@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { CompatibilityRing } from '../../components/ui/CompatibilityRing';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.82;
@@ -34,6 +35,7 @@ const DUMMY_TOP_MATCHES = [
     age: 28,
     tags: ['📍 Chennai', '💼 Software Professional', '🎓 B.Tech', '🗣️ Tamil'],
     imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
+    compatibility: 85,
   },
   {
     id: '2',
@@ -41,6 +43,7 @@ const DUMMY_TOP_MATCHES = [
     age: 26,
     tags: ['📍 Bangalore', '💼 UX Designer', '🎓 B.Des', '🗣️ Kannada'],
     imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
+    compatibility: 60,
   },
   {
     id: '3',
@@ -48,6 +51,7 @@ const DUMMY_TOP_MATCHES = [
     age: 27,
     tags: ['📍 Mumbai', '💼 Architect', '🎓 M.Arch', '🗣️ Gujarati'],
     imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
+    compatibility: 45,
   },
 ];
 
@@ -118,6 +122,10 @@ export default function DiscoverScreen() {
     <View style={[styles.topMatchCard, { marginLeft: index === 0 ? 20 : 0 }]}>
       <View style={styles.topMatchImageContainer}>
         <Image source={{ uri: item.imageUrl }} style={styles.topMatchImage} />
+
+        {/* Astrological Compatibility Ring */}
+        <CompatibilityRing percentage={item.compatibility} size={54} strokeWidth={5} />
+
         {/* Heart button */}
         <TouchableOpacity style={styles.heartBtn}>
           <Ionicons name="heart" size={24} color="#FDBE01" />
