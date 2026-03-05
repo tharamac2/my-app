@@ -40,6 +40,7 @@ export default function LoginScreen() {
     const [step, setStep] = useState<LoginStep>('email');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [mobileNumber, setMobileNumber] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [emailError, setEmailError] = useState('');
@@ -135,9 +136,11 @@ export default function LoginScreen() {
                     placeholderTextColor="#666"
                     value={password}
                     onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
                 />
-                <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
+                <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.inputRightIcon}>
+                    <Ionicons name={showPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#1A1A1A" />
+                </TouchableOpacity>
             </View>
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 

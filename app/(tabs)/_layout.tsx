@@ -14,16 +14,18 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: themeColors.tint,
-        tabBarInactiveTintColor: themeColors.textSecondary,
+        tabBarActiveTintColor: '#000000',
+        tabBarInactiveTintColor: '#444444',
+        tabBarShowLabel: false,
         headerShown: true,
         headerStyle: {
           backgroundColor: themeColors.background,
         },
         headerTintColor: themeColors.text,
         tabBarStyle: {
-          backgroundColor: themeColors.surface,
-          borderTopColor: themeColors.border,
+          backgroundColor: '#FDBE01',
+          borderTopWidth: 0,
+          height: 60,
           ...Platform.select({
             ios: {
               shadowColor: '#000',
@@ -41,29 +43,37 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          headerShown: false,
           title: 'Discover',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="sparkles" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house" color={color} />,
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="chat"
         options={{
-          title: 'Search',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="magnifyingglass" color={color} />,
+          title: 'Chat',
+          tabBarIcon: ({ color }) => <IconSymbol size={26} name="message" color={color} />,
         }}
       />
       <Tabs.Screen
         name="matches"
         options={{
           title: 'Matches',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="heart.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="heart" color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="premium"
+        options={{
+          title: 'Premium',
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="crown" color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={24} name="person.fill" color={color} />,
+          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person" color={color} />,
         }}
       />
       {/* Remove explore by not including it, or we could explicitly hide it if it still exists */}
