@@ -64,10 +64,10 @@ export default function CreateProfileScreen() {
 
     const getLabelPrefix = () => {
         if (profileFor === 'myself') return gender === 'male' ? 'His' : 'Her';
-        if (profileFor === 'son') return 'Your son';
-        if (profileFor === 'daughter') return 'Your daughter';
-        if (profileFor === 'brother') return 'Your brother';
-        if (profileFor === 'sister') return 'Your sister';
+        if (profileFor === 'son') return 'Your Son';
+        if (profileFor === 'daughter') return 'Your Daughter';
+        if (profileFor === 'brother') return 'Your Brother';
+        if (profileFor === 'sister') return 'Your Sister';
         if (profileFor === 'friend') return 'Your friend';
         if (profileFor === 'relative') return 'Your relative';
         return 'Her';
@@ -75,22 +75,28 @@ export default function CreateProfileScreen() {
 
     const getPronoun = () => {
         if (profileFor === 'myself') return gender === 'male' ? 'He' : 'She';
-        if (profileFor === 'son' || profileFor === 'brother') return 'He';
-        if (profileFor === 'daughter' || profileFor === 'sister') return 'She';
+        if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'daughter' || profileFor === 'sister') return 'He';
         return 'He';
     };
 
-    const getPossessive = () => {
+    const getPossessive = (currentStep?: OnboardStep) => {
         if (profileFor === 'myself') return gender === 'male' ? 'His' : 'Her';
-        if (profileFor === 'son' || profileFor === 'brother') return 'His';
-        if (profileFor === 'daughter' || profileFor === 'sister') return 'Her';
+
+        // Mockup specific logic: swap possessives for religion step in relative paths
+        if (currentStep === 'preferences') {
+            if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'friend' || profileFor === 'relative') return 'Her';
+            if (profileFor === 'daughter' || profileFor === 'sister') return 'His';
+        }
+
+        if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'daughter' || profileFor === 'sister' || profileFor === 'friend' || profileFor === 'relative') return 'His';
         return 'His';
     };
 
     const handleContinue = () => {
         if (step === 'profile_for') {
-            if (profileFor === 'myself') setStep('gender');
-            else {
+            if (profileFor === 'myself' || profileFor === 'friend' || profileFor === 'relative') {
+                setStep('gender');
+            } else {
                 if (profileFor === 'son' || profileFor === 'brother') setGender('male');
                 else if (profileFor === 'daughter' || profileFor === 'sister') setGender('female');
                 setStep('basic_details');
@@ -111,7 +117,7 @@ export default function CreateProfileScreen() {
     const handleBack = () => {
         if (step === 'gender') setStep('profile_for');
         else if (step === 'basic_details') {
-            if (profileFor === 'myself') setStep('gender');
+            if (profileFor === 'myself' || profileFor === 'friend' || profileFor === 'relative') setStep('gender');
             else setStep('profile_for');
         }
         else if (step === 'preferences') setStep('basic_details');
@@ -200,11 +206,11 @@ export default function CreateProfileScreen() {
     const renderStepGender = () => (
         <View style={styles.stepContent}>
             {renderHeaderIcon('gender')}
-            <Text style={styles.title}>You are</Text>
+            <Text style={styles.title}>{profileFor === 'myself' ? 'You are' : `${getLabelPrefix()} is`}</Text>
             <View style={styles.genderOptions}>
                 {[
-                    { id: 'male', label: 'Male', sub: "I'mL looking for a female" },
-                    { id: 'female', label: 'Female', sub: "I'mL looking for a male" },
+                    { id: 'male', label: 'Male', sub: profileFor === 'myself' ? "I'mL looking for a female" : "I'mL looking for a female for him" },
+                    { id: 'female', label: 'Female', sub: profileFor === 'myself' ? "I'mL looking for a male" : "I'mL looking for a male for him" },
                 ].map((opt) => (
                     <TouchableOpacity
                         key={opt.id}
@@ -299,7 +305,7 @@ export default function CreateProfileScreen() {
 
             <Text style={[styles.title, { marginTop: 30 }]}>Sub-Community</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} sub-Community</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} sub-Community</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
@@ -313,7 +319,7 @@ export default function CreateProfileScreen() {
     const renderStepPreferences = () => (
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
-            <Text style={styles.title}>{getPossessive()} religion</Text>
+            <Text style={styles.title}>{getPossessive(step)} religion</Text>
             <TouchableOpacity style={styles.dropdownInput}>
                 <Text style={styles.dropdownActiveText}>{religion}</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
@@ -338,19 +344,19 @@ export default function CreateProfileScreen() {
             {renderHeaderIcon('details')}
             <Text style={styles.title}>Marital status</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} Marital status</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Marital status</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Height</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} Height *</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Height *</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Weight</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} Weight *</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Weight *</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -361,7 +367,7 @@ export default function CreateProfileScreen() {
             {renderHeaderIcon('qualification')}
             <Text style={styles.title}>Highest qualification</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} highest qualification</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} highest qualification</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -409,7 +415,7 @@ export default function CreateProfileScreen() {
             {renderHeaderIcon('work')}
             <Text style={styles.title}>Annual income</Text>
             <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive()} annual income*</Text>
+                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} annual income*</Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
