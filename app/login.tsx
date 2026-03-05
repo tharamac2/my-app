@@ -41,8 +41,45 @@ export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [mobileError, setMobileError] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
     const otpFields = useRef<Array<TextInput | null>>([]);
+
+    const validateEmail = (text: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
+    const validateMobile = (text: string) => /^[0-9]{10}$/.test(text);
+    const validatePassword = (text: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/.test(text);
+
+    const handleEmailLogin = () => {
+        let valid = true;
+        if (!email || !validateEmail(email)) {
+            setEmailError('Please enter a valid email address');
+            valid = false;
+        } else {
+            setEmailError('');
+        }
+
+        if (!password || !validatePassword(password)) {
+            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+            valid = false;
+        } else {
+            setPasswordError('');
+        }
+
+        if (valid) {
+            router.replace('/(tabs)' as any);
+        }
+    };
+
+    const handleMobileSubmit = () => {
+        if (!mobileNumber || !validateMobile(mobileNumber)) {
+            setMobileError('Mobile number must be exactly 10 digits');
+            return;
+        }
+        setMobileError('');
+        setStep('otp');
+    };
 
     const handleBack = () => {
         if (step === 'otp') setStep('mobile');
@@ -76,31 +113,33 @@ export default function LoginScreen() {
         <View style={styles.card}>
             <Text style={styles.cardTitle}>login</Text>
 
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, emailError ? styles.inputError : null]}>
                 <Ionicons name="mail-outline" size={20} color="#1A1A1A" style={styles.inputIcon} />
                 <TextInput
                     style={styles.input}
                     placeholder="Enter your email address"
                     placeholderTextColor="#666"
                     value={email}
-                    onChangeText={setEmail}
+                    onChangeText={(val) => { setEmail(val); setEmailError(''); }}
                     keyboardType="email-address"
                     autoCapitalize="none"
                 />
             </View>
+            {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
 
-            <View style={styles.inputContainer}>
+            <View style={[styles.inputContainer, passwordError ? styles.inputError : null]}>
                 <Ionicons name="lock-closed-outline" size={20} color="#1A1A1A" style={styles.inputIcon} />
                 <TextInput
                     style={styles.input}
                     placeholder="Password"
                     placeholderTextColor="#666"
                     value={password}
-                    onChangeText={setPassword}
+                    onChangeText={(val) => { setPassword(val); setPasswordError(''); }}
                     secureTextEntry
                 />
                 <Ionicons name="eye-off-outline" size={20} color="#1A1A1A" style={styles.inputRightIcon} />
             </View>
+            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
 
             <View style={styles.linksRow}>
                 <TouchableOpacity onPress={() => setStep('mobile')}>
@@ -113,7 +152,7 @@ export default function LoginScreen() {
 
             <TouchableOpacity
                 style={styles.primaryButton}
-                onPress={() => router.replace('/(tabs)' as any)}
+                onPress={handleEmailLogin}
             >
                 <Text style={styles.primaryButtonText}>login</Text>
             </TouchableOpacity>
@@ -135,7 +174,7 @@ export default function LoginScreen() {
             </View>
             <Text style={styles.stepTitle}>Mobile number</Text>
 
-            <View style={[styles.inputContainer, { paddingLeft: 0 }]}>
+            <View style={[styles.inputContainer, { paddingLeft: 0 }, mobileError ? styles.inputError : null]}>
                 <View style={styles.countryCode}>
                     <Text style={styles.countryCodeText}>+ 91</Text>
                 </View>
@@ -144,14 +183,16 @@ export default function LoginScreen() {
                     placeholder="Enter your Mobile number"
                     placeholderTextColor="#666"
                     value={mobileNumber}
-                    onChangeText={setMobileNumber}
+                    onChangeText={(val) => { setMobileNumber(val.replace(/[^0-9]/g, '').slice(0, 10)); setMobileError(''); }}
                     keyboardType="phone-pad"
+                    maxLength={10}
                 />
             </View>
+            {mobileError ? <Text style={styles.errorText}>{mobileError}</Text> : null}
 
             <TouchableOpacity
                 style={[styles.primaryButton, { marginTop: 60 }]}
-                onPress={() => setStep('otp')}
+                onPress={handleMobileSubmit}
             >
                 <Text style={styles.primaryButtonText}>Get OTP</Text>
             </TouchableOpacity>
@@ -415,5 +456,17 @@ const styles = StyleSheet.create({
         backgroundColor: '#1A1A1A',
         borderRadius: 10,
         alignSelf: 'center',
+    },
+    errorText: {
+        color: '#EF4444',
+        fontSize: 12,
+        marginLeft: 20,
+        marginTop: -15,
+        marginBottom: 15,
+        fontFamily: serifFont,
+    },
+    inputError: {
+        borderColor: '#EF4444',
+        borderWidth: 1,
     },
 });
