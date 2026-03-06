@@ -200,13 +200,11 @@ export default function LoginScreen() {
                 <Text style={styles.primaryButtonText}>Get OTP</Text>
             </TouchableOpacity>
 
-            <View style={styles.footerButtons}>
-                <TouchableOpacity style={styles.footerActionBtn} onPress={() => setStep('email')}>
-                    <Text style={styles.footerActionText}>login</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.footerActionBtn} onPress={() => router.push('/register' as any)}>
-                    <Text style={styles.footerActionText}>Signup</Text>
-                </TouchableOpacity>
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>Don&apos;t have an account? </Text>
+                <Link href="/register" style={[styles.linkTextBold, { fontSize: 16 }]}>
+                    Signup
+                </Link>
             </View>
         </View>
     );
@@ -241,6 +239,13 @@ export default function LoginScreen() {
             >
                 <Text style={styles.primaryButtonText}>Verify OTP</Text>
             </TouchableOpacity>
+
+            <View style={styles.footer}>
+                <Text style={styles.footerText}>Don&apos;t have an account? </Text>
+                <Link href="/register" style={[styles.linkTextBold, { fontSize: 16 }]}>
+                    Signup
+                </Link>
+            </View>
         </View>
     );
 

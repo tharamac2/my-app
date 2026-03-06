@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
@@ -49,7 +50,8 @@ export default function CreateProfileScreen() {
     const [gender, setGender] = useState<string | null>(null);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
-    const [dob, setDob] = useState({ day: '', month: '', year: '' });
+    const [dob, setDob] = useState<Date | null>(null);
+    const [showDatePicker, setShowDatePicker] = useState(false);
     const [religion, setReligion] = useState('Hindu');
     const [community, setCommunity] = useState('');
     const [livingIn, setLivingIn] = useState('India');
@@ -139,6 +141,24 @@ export default function CreateProfileScreen() {
         setPickerVisible(false);
     };
 
+    const onDateChange = (event: any, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === 'ios');
+        if (selectedDate) {
+            setDob(selectedDate);
+        }
+    };
+
+    const calculateAge = (birthday: Date | null) => {
+        if (!birthday) return 0;
+        const today = new Date();
+        let age = today.getFullYear() - birthday.getFullYear();
+        const m = today.getMonth() - birthday.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthday.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
     const OPTIONS = {
         religion: ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Other'],
         community: ['Brahmins', 'Rajputs', 'Agarwals', 'Jats', 'Marathas', 'Kayasthas', 'Other'],
@@ -165,26 +185,19 @@ export default function CreateProfileScreen() {
         if (profileFor === 'sister') return 'Your Sister';
         if (profileFor === 'friend') return 'Your friend';
         if (profileFor === 'relative') return 'Your relative';
-        return 'Her';
+        return gender === 'male' ? 'His' : 'Her';
     };
 
     const getPronoun = () => {
-        if (profileFor === 'myself') return gender === 'male' ? 'He' : 'She';
-        if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'daughter' || profileFor === 'sister') return 'He';
-        return 'He';
+        return gender === 'female' ? 'She' : 'He';
     };
 
-    const getPossessive = (currentStep?: OnboardStep) => {
-        if (profileFor === 'myself') return gender === 'male' ? 'His' : 'Her';
+    const getPossessive = () => {
+        return gender === 'female' ? 'Her' : 'His';
+    };
 
-        // Mockup specific logic: swap possessives for religion step in relative paths
-        if (currentStep === 'preferences') {
-            if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'friend' || profileFor === 'relative') return 'Her';
-            if (profileFor === 'daughter' || profileFor === 'sister') return 'His';
-        }
-
-        if (profileFor === 'son' || profileFor === 'brother' || profileFor === 'daughter' || profileFor === 'sister' || profileFor === 'friend' || profileFor === 'relative') return 'His';
-        return 'His';
+    const getObjective = () => {
+        return gender === 'female' ? 'her' : 'him';
     };
 
     const handleContinue = () => {
@@ -198,7 +211,13 @@ export default function CreateProfileScreen() {
             }
         }
         else if (step === 'gender') setStep('basic_details');
-        else if (step === 'basic_details') setStep('preferences');
+        else if (step === 'basic_details') {
+            if (calculateAge(dob) < 18) {
+                Alert.alert('Age Restriction', 'You must be at least 18 years old to register.');
+                return;
+            }
+            setStep('preferences');
+        }
         else if (step === 'preferences') setStep('location');
         else if (step === 'location') setStep('physical_info');
         else if (step === 'physical_info') setStep('qualification');
@@ -304,8 +323,8 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>{profileFor === 'myself' ? 'You are' : `${getLabelPrefix()} is`}</Text>
             <View style={styles.genderOptions}>
                 {[
-                    { id: 'male', label: 'Male', sub: profileFor === 'myself' ? "I'mL looking for a female" : "I'mL looking for a female for him" },
-                    { id: 'female', label: 'Female', sub: profileFor === 'myself' ? "I'mL looking for a male" : "I'mL looking for a male for him" },
+                    { id: 'male', label: 'Male', sub: profileFor === 'myself' ? "I'm looking for a female" : "I'm looking for a female for him" },
+                    { id: 'female', label: 'Female', sub: profileFor === 'myself' ? "I'm looking for a male" : "I'm looking for a male for her" },
                 ].map((opt) => (
                     <TouchableOpacity
                         key={opt.id}
@@ -326,7 +345,7 @@ export default function CreateProfileScreen() {
     const renderStepBasicDetails = () => (
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
-            <Text style={styles.title}>{getLabelPrefix()} name</Text>
+            <Text style={styles.title}>{getPossessive()} name</Text>
             <View style={styles.inputGroup}>
                 <TextInput
                     style={styles.pillInput}
@@ -344,42 +363,26 @@ export default function CreateProfileScreen() {
                 />
             </View>
 
-            <Text style={[styles.title, { marginTop: 30 }]}>{getLabelPrefix()} Data of birth</Text>
-            <View style={styles.dobRow}>
-                <View style={styles.dobColumn}>
-                    <Text style={styles.dobLabel}>Day</Text>
-                    <TextInput
-                        style={styles.dobInput}
-                        placeholder="DD"
-                        maxLength={2}
-                        keyboardType="number-pad"
-                        value={dob.day}
-                        onChangeText={(t) => setDob({ ...dob, day: t })}
-                    />
-                </View>
-                <View style={styles.dobColumn}>
-                    <Text style={styles.dobLabel}>Month</Text>
-                    <TextInput
-                        style={styles.dobInput}
-                        placeholder="MM"
-                        maxLength={2}
-                        keyboardType="number-pad"
-                        value={dob.month}
-                        onChangeText={(t) => setDob({ ...dob, month: t })}
-                    />
-                </View>
-                <View style={styles.dobColumn}>
-                    <Text style={styles.dobLabel}>Year</Text>
-                    <TextInput
-                        style={styles.dobInput}
-                        placeholder="YYYY"
-                        maxLength={4}
-                        keyboardType="number-pad"
-                        value={dob.year}
-                        onChangeText={(t) => setDob({ ...dob, year: t })}
-                    />
-                </View>
-            </View>
+            <Text style={[styles.title, { marginTop: 30 }]}>{getPossessive()} Date of birth</Text>
+            <TouchableOpacity
+                style={styles.dropdownInput}
+                onPress={() => setShowDatePicker(true)}
+            >
+                <Text style={dob ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {dob ? dob.toLocaleDateString() : 'Select Date of Birth'}
+                </Text>
+                <Ionicons name="calendar-outline" size={20} color="#1A1A1A" />
+            </TouchableOpacity>
+
+            {showDatePicker && (
+                <DateTimePicker
+                    value={dob || new Date(2000, 0, 1)}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    maximumDate={new Date()}
+                    onChange={onDateChange}
+                />
+            )}
         </View>
     );
 
@@ -405,7 +408,7 @@ export default function CreateProfileScreen() {
             <Text style={[styles.title, { marginTop: 30 }]}>Sub-Community</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('subCommunity', 'Select Sub-Community', OPTIONS.subCommunity)}>
                 <Text style={subCommunity ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {subCommunity || `${getPossessive(step)} sub-Community`}
+                    {subCommunity || `${getPossessive()} sub-Community`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -420,7 +423,7 @@ export default function CreateProfileScreen() {
     const renderStepPreferences = () => (
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
-            <Text style={styles.title}>{getPossessive(step)} religion</Text>
+            <Text style={styles.title}>{getPossessive()} religion</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('religion', 'Select Religion', OPTIONS.religion)}>
                 <Text style={religion ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
                     {religion || 'Select Religion'}
@@ -452,7 +455,7 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>Marital status</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('maritalStatus', 'Select Marital Status', OPTIONS.maritalStatus)}>
                 <Text style={maritalStatus ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {maritalStatus || `${getPossessive(step)} Marital status`}
+                    {maritalStatus || `${getPossessive()} Marital status`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -460,7 +463,7 @@ export default function CreateProfileScreen() {
             <Text style={[styles.title, { marginTop: 30 }]}>Height</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('height', 'Select Height', OPTIONS.height)}>
                 <Text style={height ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {height || `${getPossessive(step)} Height *`}
+                    {height || `${getPossessive()} Height *`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -468,7 +471,7 @@ export default function CreateProfileScreen() {
             <Text style={[styles.title, { marginTop: 30 }]}>Weight</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('weight', 'Select Weight', OPTIONS.weight)}>
                 <Text style={weight ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {weight || `${getPossessive(step)} Weight *`}
+                    {weight || `${getPossessive()} Weight *`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -481,7 +484,7 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>Highest qualification</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('qualification', 'Select Qualification', OPTIONS.qualification)}>
                 <Text style={qualification ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {qualification || `${getPossessive(step)} highest qualification`}
+                    {qualification || `${getPossessive()} highest qualification`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -535,7 +538,7 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>Annual income</Text>
             <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('income', 'Select Annual Income', OPTIONS.income)}>
                 <Text style={income ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
-                    {income || `${getPossessive(step)} annual income*`}
+                    {income || `${getPossessive()} annual income*`}
                 </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
@@ -617,7 +620,7 @@ export default function CreateProfileScreen() {
                     style={styles.successButton}
                     onPress={() => router.replace('/(tabs)')}
                 >
-                    <Text style={styles.successButtonText}>Profile Created sucessfully</Text>
+                    <Text style={styles.successButtonText}>Profile Created successfully</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -626,7 +629,7 @@ export default function CreateProfileScreen() {
     const isButtonEnabled = () => {
         if (step === 'profile_for') return !!profileFor;
         if (step === 'gender') return !!gender;
-        if (step === 'basic_details') return firstName && lastName && dob.day && dob.month && dob.year;
+        if (step === 'basic_details') return firstName && lastName && dob !== null;
         return true;
     };
 

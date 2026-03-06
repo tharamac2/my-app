@@ -5,19 +5,21 @@ import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
     Dimensions,
+    FlatList,
     KeyboardAvoidingView,
+    Modal,
     Platform,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View
+    View,
 } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-type RegisterStep = 'choice' | 'email' | 'phone' | 'google' | 'otp';
+type RegisterStep = 'choice' | 'email' | 'phone' | 'otp';
 
 const serifFont = Platform.select({
     ios: 'Georgia',
@@ -52,7 +54,16 @@ export default function RegisterScreen() {
     const [mobileError, setMobileError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
+    const [googleModalVisible, setGoogleModalVisible] = useState(false);
     const otpFields = useRef<Array<TextInput | null>>([]);
+
+    const deviceAccounts = [
+        { id: '1', name: 'Hacking Tech Tamil', email: 'santhoshsanthosh446@gmail.com', icon: 'account-circle' },
+        { id: '2', name: 'Sp.2021 sans', email: 'santhoshsanthosh433@gmail.com', icon: 'account-circle' },
+        { id: '3', name: 'Sans edits', email: '2021sans@gmail.com', icon: 'account-circle' },
+        { id: '4', name: 'Santhosh.s 2021', email: 'sans202123@gmail.com', icon: 'account-circle' },
+        { id: '5', name: 'Santhosh Medifriendbot', email: 'santhoshmedifriendbot@gmail.com', icon: 'account-circle' },
+    ];
 
     const validateEmail = (text: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
     const validateMobile = (text: string) => /^[0-9]{10}$/.test(text);
@@ -101,7 +112,7 @@ export default function RegisterScreen() {
     };
 
     const handleBack = () => {
-        if (step === 'email' || step === 'phone' || step === 'google') setStep('choice');
+        if (step === 'email' || step === 'phone') setStep('choice');
         else if (step === 'otp') setStep('email');
         else router.back();
     };
@@ -122,12 +133,7 @@ export default function RegisterScreen() {
                     <Ionicons name="chevron-back" size={28} color="#FDBE01" />
                 </TouchableOpacity>
             )}
-            {step !== 'google' ? <Logo /> : (
-                <View style={styles.googleHeader}>
-                    <Ionicons name="logo-google" size={100} color="#EA4335" />
-                    <Text style={styles.googleHeaderText}>Choose an account</Text>
-                </View>
-            )}
+            <Logo />
         </View>
     );
 
@@ -144,7 +150,7 @@ export default function RegisterScreen() {
                 <Text style={styles.choiceButtonText}>Sign Up with Phone</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.choiceButton} onPress={() => setStep('google')}>
+            <TouchableOpacity style={styles.choiceButton} onPress={() => setGoogleModalVisible(true)}>
                 <Ionicons name="logo-google" size={24} color="#EA4335" style={styles.choiceIcon} />
                 <Text style={styles.choiceButtonText}>Sign Up with Google</Text>
             </TouchableOpacity>
@@ -251,27 +257,73 @@ export default function RegisterScreen() {
         </View>
     );
 
-    const renderGoogleAccount = () => (
-        <View style={styles.card}>
-            <Text style={styles.googleCardHeader}>To Continue to signup</Text>
+    const renderGoogleModal = () => (
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={googleModalVisible}
+            onRequestClose={() => setGoogleModalVisible(false)}
+        >
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setGoogleModalVisible(false)}
+            >
+                <View style={styles.googlePopupContainer}>
+                    <View style={styles.googlePopupHeader}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                            <Ionicons name="logo-google" size={32} color="#EA4335" />
+                            <Text style={styles.googlePopupTitle}>Choose an account</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setGoogleModalVisible(false)}>
+                            <Ionicons name="close" size={28} color="#666" />
+                        </TouchableOpacity>
+                    </View>
 
-            <TouchableOpacity style={styles.accountPill}>
-                <Ionicons name="mail-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
-                <Text style={styles.accountText}>email@gmail.com</Text>
+                    <Text style={styles.googlePopupSubtitle}>to continue to Ratan Matrimony</Text>
+
+                    <FlatList
+                        data={deviceAccounts}
+                        keyExtractor={(item) => item.id}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.googleAccountItem}
+                                onPress={() => {
+                                    setGoogleModalVisible(false);
+                                    router.push('/(tabs)' as any);
+                                }}
+                            >
+                                <View style={styles.accountIconContainer}>
+                                    <MaterialCommunityIcons name={item.icon as any} size={28} color="#E8EAED" />
+                                </View>
+                                <View style={styles.accountTextContainer}>
+                                    <Text style={styles.accountNameText}>{item.name}</Text>
+                                    <Text style={styles.accountEmailText}>{item.email}</Text>
+                                    <Text style={styles.signInWithGoogleText}>Sign in with Google</Text>
+                                </View>
+                            </TouchableOpacity>
+                        )}
+                        ItemSeparatorComponent={() => <View style={styles.accountSeparator} />}
+                        style={{ marginVertical: 10 }}
+                    />
+
+                    <TouchableOpacity
+                        style={[styles.googleAccountItem, { marginTop: 10 }]}
+                        onPress={() => {
+                            setGoogleModalVisible(false);
+                            router.push('/(tabs)' as any);
+                        }}
+                    >
+                        <View style={styles.accountIconContainer}>
+                            <Ionicons name="person-circle-outline" size={28} color="#E8EAED" />
+                        </View>
+                        <View style={styles.accountTextContainer}>
+                            <Text style={styles.accountNameText}>Use another account</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
             </TouchableOpacity>
-
-            <TouchableOpacity style={styles.accountPill}>
-                <Ionicons name="person-circle-outline" size={30} color="#1A1A1A" style={styles.pillIcon} />
-                <Text style={styles.accountText}>Use other account</Text>
-            </TouchableOpacity>
-
-            <View style={styles.googleFooter}>
-                <Text style={styles.footerLabel}>Already have an account ? </Text>
-                <Link href="/login" style={styles.signupActionText}>
-                    Login
-                </Link>
-            </View>
-        </View>
+        </Modal>
     );
 
     const renderOtpVerify = () => (
@@ -321,10 +373,10 @@ export default function RegisterScreen() {
                 {step === 'choice' && renderChoice()}
                 {step === 'email' && renderEmailInput()}
                 {step === 'phone' && renderPhoneInput()}
-                {step === 'google' && renderGoogleAccount()}
                 {step === 'otp' && renderOtpVerify()}
             </ScrollView>
             <View style={styles.homeIndicator} />
+            {renderGoogleModal()}
         </KeyboardAvoidingView>
     );
 }
@@ -579,5 +631,74 @@ const styles = StyleSheet.create({
     inputError: {
         borderColor: '#EF4444',
         borderWidth: 1,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    googlePopupContainer: {
+        backgroundColor: '#202124',
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        paddingHorizontal: 24,
+        paddingTop: 16,
+        paddingBottom: 40,
+        maxHeight: '85%',
+    },
+    googlePopupHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+    googlePopupTitle: {
+        fontSize: 24,
+        color: '#E8EAED',
+        textAlign: 'center',
+        fontFamily: serifFont,
+        fontWeight: '500',
+    },
+    googlePopupSubtitle: {
+        fontSize: 14,
+        color: '#9AA0A6',
+        textAlign: 'center',
+        marginBottom: 30,
+        marginTop: 4,
+    },
+    googleAccountItem: {
+        flexDirection: 'row',
+        paddingVertical: 16,
+        alignItems: 'center',
+    },
+    accountIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#3C4043',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    accountTextContainer: {
+        flex: 1,
+    },
+    accountNameText: {
+        fontSize: 16,
+        color: '#E8EAED',
+        fontWeight: '500',
+    },
+    accountEmailText: {
+        fontSize: 14,
+        color: '#9AA0A6',
+    },
+    signInWithGoogleText: {
+        fontSize: 12,
+        color: '#9AA0A6',
+        marginTop: 2,
+    },
+    accountSeparator: {
+        height: 1,
+        backgroundColor: '#3C4043',
     },
 });
