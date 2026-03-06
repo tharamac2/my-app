@@ -1,9 +1,14 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Alert,
     Dimensions,
+    FlatList,
+    Image,
+    Modal,
     Platform,
     SafeAreaView,
     ScrollView,
@@ -61,6 +66,96 @@ export default function CreateProfileScreen() {
     const [income, setIncome] = useState('');
     const [worksWith, setWorksWith] = useState('');
     const [worksAs, setWorksAs] = useState('');
+
+    // Image State
+    const [horoscopeImage, setHoroscopeImage] = useState<string | null>(null);
+    const [profileImages, setProfileImages] = useState<(string | null)[]>([null, null]);
+
+    const pickImage = async (type: 'horoscope' | 'profile', index?: number) => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission needed', 'We need permission to access your gallery to upload photos.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: type === 'profile' ? [1, 1] : [3, 4],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            if (type === 'horoscope') {
+                setHoroscopeImage(result.assets[0].uri);
+            } else if (type === 'profile' && index !== undefined) {
+                const newImages = [...profileImages];
+                newImages[index] = result.assets[0].uri;
+                setProfileImages(newImages);
+            }
+        }
+    };
+
+    const removeImage = (type: 'horoscope' | 'profile', index?: number) => {
+        if (type === 'horoscope') setHoroscopeImage(null);
+        else if (type === 'profile' && index !== undefined) {
+            const newImages = [...profileImages];
+            newImages[index] = null;
+            setProfileImages(newImages);
+        }
+    };
+
+    // Picker State
+    const [pickerVisible, setPickerVisible] = useState(false);
+    const [pickerOptions, setPickerOptions] = useState<string[]>([]);
+    const [pickerTarget, setPickerTarget] = useState<string | null>(null);
+    const [pickerTitle, setPickerTitle] = useState('');
+
+    const openPicker = (target: string, title: string, options: string[]) => {
+        setPickerTarget(target);
+        setPickerTitle(title);
+        setPickerOptions(options);
+        setPickerVisible(true);
+    };
+
+    const handleSelect = (value: string) => {
+        switch (pickerTarget) {
+            case 'religion': setReligion(value); break;
+            case 'community': setCommunity(value); break;
+            case 'livingIn': setLivingIn(value); break;
+            case 'state': setState(value); break;
+            case 'city': setCity(value); break;
+            case 'subCommunity': setSubCommunity(value); break;
+            case 'maritalStatus': setMaritalStatus(value); break;
+            case 'height': setHeight(value); break;
+            case 'weight': setWeight(value); break;
+            case 'qualification': setQualification(value); break;
+            case 'zodiac': setZodiac(value); break;
+            case 'star': setStar(value); break;
+            case 'income': setIncome(value); break;
+            case 'worksWith': setWorksWith(value); break;
+            case 'worksAs': setWorksAs(value); break;
+        }
+        setPickerVisible(false);
+    };
+
+    const OPTIONS = {
+        religion: ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Other'],
+        community: ['Brahmins', 'Rajputs', 'Agarwals', 'Jats', 'Marathas', 'Kayasthas', 'Other'],
+        livingIn: ['India', 'USA', 'UK', 'Canada', 'Australia', 'Other'],
+        state: ['Andhra Pradesh', 'Tamil Nadu', 'Karnataka', 'Maharashtra', 'Delhi', 'Uttar Pradesh', 'Other'],
+        city: ['Mumbai', 'Chennai', 'Bangalore', 'Delhi', 'Hyderabad', 'Pune', 'Other'],
+        subCommunity: ['Generic', 'Special', 'Traditional', 'Modern', 'Other'],
+        maritalStatus: ['Never Married', 'Divorced', 'Widowed', 'Awaiting Divorce'],
+        height: ["4'5\"", "4'10\"", "5'0\"", "5'2\"", "5'5\"", "5'8\"", "6'0\"", "6'2\"", "6'5\""],
+        weight: ['40 kg', '50 kg', '60 kg', '70 kg', '80 kg', '90 kg', '100 kg'],
+        qualification: ['B.Tech', 'M.Tech', 'MBA', 'MBBS', 'PhD', 'B.Com', 'M.Com', 'Other'],
+        zodiac: ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'],
+        star: ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Other'],
+        income: ['2 - 5 LPA', '5 - 10 LPA', '10 - 20 LPA', '20 - 50 LPA', '50+ LPA'],
+        worksWith: ['Private Sector', 'Government Sector', 'Defense', 'Self Employed', 'Business', 'Not Working'],
+        worksAs: ['Engineer', 'Doctor', 'Teacher', 'Manager', 'Entrepreneur', 'Architect', 'Artist', 'Other'],
+    };
 
     const getLabelPrefix = () => {
         if (profileFor === 'myself') return gender === 'male' ? 'His' : 'Her';
@@ -292,20 +387,26 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('location')}
             <Text style={styles.title}>State</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>State {getPronoun().toLowerCase()} lives in</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('state', 'Select State', OPTIONS.state)}>
+                <Text style={state ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {state || `State ${getPronoun().toLowerCase()} lives in`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>City</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>City {getPronoun().toLowerCase()} lives in</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('city', 'Select City', OPTIONS.city)}>
+                <Text style={city ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {city || `City ${getPronoun().toLowerCase()} lives in`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Sub-Community</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} sub-Community</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('subCommunity', 'Select Sub-Community', OPTIONS.subCommunity)}>
+                <Text style={subCommunity ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {subCommunity || `${getPossessive(step)} sub-Community`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
@@ -320,20 +421,26 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
             <Text style={styles.title}>{getPossessive(step)} religion</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownActiveText}>{religion}</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('religion', 'Select Religion', OPTIONS.religion)}>
+                <Text style={religion ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {religion || 'Select Religion'}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Community</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>Community</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('community', 'Select Community', OPTIONS.community)}>
+                <Text style={community ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {community || 'Community'}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Living in</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownActiveText}>{livingIn}</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('livingIn', 'Select Living Country', OPTIONS.livingIn)}>
+                <Text style={livingIn ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {livingIn || 'Select Country'}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -343,20 +450,26 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
             <Text style={styles.title}>Marital status</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Marital status</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('maritalStatus', 'Select Marital Status', OPTIONS.maritalStatus)}>
+                <Text style={maritalStatus ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {maritalStatus || `${getPossessive(step)} Marital status`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Height</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Height *</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('height', 'Select Height', OPTIONS.height)}>
+                <Text style={height ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {height || `${getPossessive(step)} Height *`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Weight</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} Weight *</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('weight', 'Select Weight', OPTIONS.weight)}>
+                <Text style={weight ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {weight || `${getPossessive(step)} Weight *`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -366,8 +479,10 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('qualification')}
             <Text style={styles.title}>Highest qualification</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} highest qualification</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('qualification', 'Select Qualification', OPTIONS.qualification)}>
+                <Text style={qualification ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {qualification || `${getPossessive(step)} highest qualification`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -380,16 +495,20 @@ export default function CreateProfileScreen() {
             <View style={styles.multiRowInput}>
                 <View style={styles.halfInput}>
                     <Text style={styles.inputSubTitle}>Zodiac</Text>
-                    <TouchableOpacity style={styles.dropdownInputSmall}>
-                        <Text style={styles.dropdownPlaceholderText}>Select</Text>
-                        <Ionicons name="caret-down" size={20} color="#1A1A1A" />
+                    <TouchableOpacity style={styles.dropdownInputSmall} onPress={() => openPicker('zodiac', 'Select Zodiac', OPTIONS.zodiac)}>
+                        <Text style={zodiac ? styles.dropdownActiveTextSmall : styles.dropdownPlaceholderText}>
+                            {zodiac || 'Select'}
+                        </Text>
+                        <Ionicons name="caret-down" size={16} color="#1A1A1A" />
                     </TouchableOpacity>
                 </View>
                 <View style={styles.halfInput}>
                     <Text style={styles.inputSubTitle}>Star</Text>
-                    <TouchableOpacity style={styles.dropdownInputSmall}>
-                        <Text style={styles.dropdownPlaceholderText}>Select</Text>
-                        <Ionicons name="caret-down" size={20} color="#1A1A1A" />
+                    <TouchableOpacity style={styles.dropdownInputSmall} onPress={() => openPicker('star', 'Select Star', OPTIONS.star)}>
+                        <Text style={star ? styles.dropdownActiveTextSmall : styles.dropdownPlaceholderText}>
+                            {star || 'Select'}
+                        </Text>
+                        <Ionicons name="caret-down" size={16} color="#1A1A1A" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -414,18 +533,30 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('work')}
             <Text style={styles.title}>Annual income</Text>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPossessive(step)} annual income*</Text>
+            <TouchableOpacity style={styles.dropdownInput} onPress={() => openPicker('income', 'Select Annual Income', OPTIONS.income)}>
+                <Text style={income ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {income || `${getPossessive(step)} annual income*`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
             <Text style={[styles.title, { marginTop: 30 }]}>Work details</Text>
-            <TouchableOpacity style={[styles.dropdownInput, { marginBottom: 20 }]}>
-                <Text style={styles.dropdownPlaceholderText}>{getPronoun()} works with</Text>
+            <TouchableOpacity
+                style={[styles.dropdownInput, { marginBottom: 20 }]}
+                onPress={() => openPicker('worksWith', 'Works With', OPTIONS.worksWith)}
+            >
+                <Text style={worksWith ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {worksWith || `${getPronoun()} works with`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.dropdownInput}>
-                <Text style={styles.dropdownPlaceholderText}>{getPronoun()} works as</Text>
+            <TouchableOpacity
+                style={styles.dropdownInput}
+                onPress={() => openPicker('worksAs', 'Works As', OPTIONS.worksAs)}
+            >
+                <Text style={worksAs ? styles.dropdownActiveText : styles.dropdownPlaceholderText}>
+                    {worksAs || `${getPronoun()} works as`}
+                </Text>
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
         </View>
@@ -435,27 +566,43 @@ export default function CreateProfileScreen() {
         <View style={styles.stepContent}>
             {renderHeaderIcon('details')}
             <Text style={styles.title}>Add Horoscope</Text>
-            <TouchableOpacity style={styles.uploadBoxFull}>
-                <View style={styles.plusBg}>
-                    <Ionicons name="add" size={30} color="#000" />
+            {horoscopeImage ? (
+                <View style={styles.uploadBoxFull}>
+                    <Image source={{ uri: horoscopeImage }} style={styles.uploadedFullImage} />
+                    <TouchableOpacity style={styles.removeIconBadge} onPress={() => removeImage('horoscope')}>
+                        <Ionicons name="close-circle" size={24} color="#FF4444" />
+                    </TouchableOpacity>
                 </View>
-                <Text style={styles.uploadText}>Upload Image / PDF</Text>
-            </TouchableOpacity>
+            ) : (
+                <TouchableOpacity style={styles.uploadBoxFull} onPress={() => pickImage('horoscope')}>
+                    <View style={styles.plusBg}>
+                        <Ionicons name="add" size={30} color="#000" />
+                    </View>
+                    <Text style={styles.uploadText}>Upload Image / PDF</Text>
+                </TouchableOpacity>
+            )}
 
             <Text style={[styles.title, { marginTop: 30 }]}>Add profile photo</Text>
             <View style={styles.profileUploadRow}>
-                <TouchableOpacity style={styles.uploadBoxHalf}>
-                    <View style={styles.plusBg}>
-                        <Ionicons name="add" size={30} color="#000" />
+                {[0, 1].map((idx) => (
+                    <View key={idx} style={styles.uploadBoxHalfContainer}>
+                        {profileImages[idx] ? (
+                            <View style={styles.uploadBoxHalf}>
+                                <Image source={{ uri: profileImages[idx]! }} style={styles.uploadedHalfImage} />
+                                <TouchableOpacity style={styles.removeIconBadge} onPress={() => removeImage('profile', idx)}>
+                                    <Ionicons name="close-circle" size={24} color="#FF4444" />
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <TouchableOpacity style={styles.uploadBoxHalf} onPress={() => pickImage('profile', idx)}>
+                                <View style={styles.plusBg}>
+                                    <Ionicons name="add" size={30} color="#000" />
+                                </View>
+                                <Text style={styles.miniUploadText}>Click to add photo</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
-                    <Text style={styles.miniUploadText}>Click to add photo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.uploadBoxHalf}>
-                    <View style={styles.plusBg}>
-                        <Ionicons name="add" size={30} color="#000" />
-                    </View>
-                    <Text style={styles.miniUploadText}>Click to add photo</Text>
-                </TouchableOpacity>
+                ))}
             </View>
         </View>
     );
@@ -482,6 +629,50 @@ export default function CreateProfileScreen() {
         if (step === 'basic_details') return firstName && lastName && dob.day && dob.month && dob.year;
         return true;
     };
+
+    const renderPickerModal = () => (
+        <Modal
+            visible={pickerVisible}
+            transparent
+            animationType="slide"
+            onRequestClose={() => setPickerVisible(false)}
+        >
+            <TouchableOpacity
+                style={styles.modalOverlay}
+                activeOpacity={1}
+                onPress={() => setPickerVisible(false)}
+            >
+                <View style={styles.pickerContainer}>
+                    <View style={styles.pickerHeader}>
+                        <Text style={styles.pickerTitle}>{pickerTitle}</Text>
+                        <TouchableOpacity onPress={() => setPickerVisible(false)}>
+                            <Ionicons name="close" size={24} color="#1A1A1A" />
+                        </TouchableOpacity>
+                    </View>
+                    <FlatList
+                        data={pickerOptions}
+                        keyExtractor={(item) => item}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={styles.pickerOption}
+                                onPress={() => handleSelect(item)}
+                            >
+                                <Text style={styles.pickerOptionText}>{item}</Text>
+                                {(item === religion || item === community || item === livingIn ||
+                                    item === state || item === city || item === subCommunity ||
+                                    item === maritalStatus || item === height || item === weight ||
+                                    item === qualification || item === zodiac || item === star ||
+                                    item === income || item === worksWith || item === worksAs) &&
+                                    <Ionicons name="checkmark" size={20} color="#FDBE01" />
+                                }
+                            </TouchableOpacity>
+                        )}
+                        contentContainerStyle={styles.pickerList}
+                    />
+                </View>
+            </TouchableOpacity>
+        </Modal>
+    );
 
     return (
         <SafeAreaView style={styles.container}>
@@ -521,6 +712,7 @@ export default function CreateProfileScreen() {
                 )}
             </ScrollView>
             <View style={styles.homeIndicator} />
+            {renderPickerModal()}
         </SafeAreaView>
     );
 }
@@ -724,7 +916,13 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: serifFont,
         fontWeight: 'bold',
-        color: '#666',
+        color: '#1A1A1A',
+    },
+    dropdownActiveTextSmall: {
+        fontSize: 16,
+        fontFamily: serifFont,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
     },
     dropdownPlaceholderText: {
         fontSize: 18,
@@ -884,5 +1082,74 @@ const styles = StyleSheet.create({
         backgroundColor: '#1A1A1A',
         borderRadius: 10,
         alignSelf: 'center',
+    },
+    uploadedFullImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 20,
+        resizeMode: 'cover',
+    },
+    uploadedHalfImage: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 20,
+        resizeMode: 'cover',
+    },
+    removeIconBadge: {
+        position: 'absolute',
+        top: -10,
+        right: -10,
+        backgroundColor: '#FFF',
+        borderRadius: 12,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+    },
+    uploadBoxHalfContainer: {
+        width: '47%',
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'flex-end',
+    },
+    pickerContainer: {
+        backgroundColor: '#FFF',
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        maxHeight: '70%',
+        paddingBottom: 30,
+    },
+    pickerHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: 25,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    pickerTitle: {
+        fontSize: 22,
+        fontFamily: serifFont,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+    },
+    pickerList: {
+        paddingHorizontal: 20,
+    },
+    pickerOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingVertical: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#F0F0F0',
+    },
+    pickerOptionText: {
+        fontSize: 18,
+        color: '#1A1A1A',
+        fontFamily: serifFont,
     },
 });

@@ -169,7 +169,7 @@ export default function ForgotPasswordScreen() {
                     secureTextEntry={!showNewPassword}
                 />
                 <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)} style={styles.inputRightIcon}>
-                    <Ionicons name={showNewPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#1A1A1A" />
+                    <Ionicons name={showNewPassword ? "eye-outline" : "eye-off-outline"} size={24} color="#1A1A1A" />
                 </TouchableOpacity>
             </View>
 
@@ -183,7 +183,7 @@ export default function ForgotPasswordScreen() {
                     secureTextEntry={!showConfirmPassword}
                 />
                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.inputRightIcon}>
-                    <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={20} color="#1A1A1A" />
+                    <Ionicons name={showConfirmPassword ? "eye-outline" : "eye-off-outline"} size={24} color="#1A1A1A" />
                 </TouchableOpacity>
             </View>
 
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: serifFont,
         color: '#1A1A1A',
-        textAlign: 'center',
+        textAlign: 'left',
     },
     primaryButton: {
         backgroundColor: '#FFFFFF',
