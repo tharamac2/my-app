@@ -1,9 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Circle } from 'react-native-svg';
 
 const { width } = Dimensions.get('window');
 
@@ -12,6 +12,42 @@ const serifFont = Platform.select({
     android: 'serif',
     default: 'serif',
 });
+
+// Reusable Circular Progress Component
+const CompletenessRing = ({ size, progress, strokeWidth }: { size: number, progress: number, strokeWidth: number }) => {
+    const radius = (size - strokeWidth) / 2;
+    const circumference = radius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+    return (
+        <View style={{ position: 'absolute', top: -4, left: -4, right: -4, bottom: -4 }}>
+            <Svg height={size} width={size}>
+                {/* Background Ring */}
+                <Circle
+                    stroke="transparent" // Removed white background ring based on image
+                    fill="transparent"
+                    strokeWidth={strokeWidth}
+                    r={radius}
+                    cx={size / 2}
+                    cy={size / 2}
+                />
+                {/* Progress Ring */}
+                <Circle
+                    stroke="#4CAF50" // Green color
+                    fill="transparent"
+                    strokeWidth={strokeWidth}
+                    strokeDasharray={`${circumference} ${circumference}`}
+                    strokeDashoffset={strokeDashoffset}
+                    strokeLinecap="round"
+                    r={radius}
+                    cx={size / 2}
+                    cy={size / 2}
+                    transform={`rotate(-135 ${size / 2} ${size / 2})`} // Rotate so it starts bottom-left
+                />
+            </Svg>
+        </View>
+    );
+};
 
 export default function ProfileDashboard() {
     const router = useRouter();
@@ -28,71 +64,61 @@ export default function ProfileDashboard() {
         <SafeAreaView style={styles.container} edges={['top']}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
-                {/* Top Header & Identity Gradient Block */}
-                <LinearGradient
-                    colors={['#C2E0F4', '#F5F5F5']}
-                    style={styles.headerGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                >
-                    {/* Navigation Row */}
-                    <View style={styles.navRow}>
-                        <TouchableOpacity style={styles.iconCircleButton}>
-                            <Ionicons name="chevron-back" size={22} color="#1A1A1A" />
-                        </TouchableOpacity>
-                        <Text style={styles.headerNavTitle}>Profile</Text>
-                        <TouchableOpacity style={styles.iconCircleButton}>
-                            <Ionicons name="ellipsis-horizontal" size={22} color="#1A1A1A" />
-                        </TouchableOpacity>
-                    </View>
+                {/* 1. Header & Identity Section (Cover + Card UI) */}
+                <View style={styles.coverPhotoContainer}>
+                    <Image
+                        source={{ uri: 'https://images.unsplash.com/photo-1557683316-973673baf926?q=80&w=1429&auto=format&fit=crop' }} // Premium gradient/abstract cover
+                        style={styles.coverPhoto}
+                    />
+                </View>
 
-                    {/* Profile User Info Row */}
-                    <View style={styles.profileRow}>
-                        <View style={styles.imageWrapper}>
-                            <Image
-                                source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop' }}
-                                style={styles.squircleImage}
-                            />
-                            <TouchableOpacity style={styles.editButtonOuter}>
-                                <View style={styles.editButtonInner}>
-                                    <Ionicons name="pencil-outline" size={12} color="#FFFFFF" />
-                                </View>
-                            </TouchableOpacity>
+                <View style={styles.profileCard}>
+                    <View style={styles.profileHeaderRow}>
+                        <View style={styles.profileOuterContainer}>
+                            <View style={styles.profileImageContainer}>
+                                <CompletenessRing size={ringSize} progress={80} strokeWidth={ringStrokeWidth} />
+                                <Image
+                                    source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop' }}
+                                    style={[styles.profileImage, { width: profileImageSize, height: profileImageSize, borderRadius: profileImageSize / 2 }]}
+                                />
+                            </View>
+                            <View style={styles.completenessBadge}>
+                                <Text style={styles.completenessText}>80%</Text>
+                            </View>
                         </View>
 
-                        <View style={styles.profileDetailsCol}>
-                            <Text style={styles.nameRowText}>J. Snow <Text style={styles.jpText}>(あなた)</Text></Text>
-                            <View style={styles.locationRow}>
-                                <Ionicons name="map-outline" size={16} color="#7DAEDB" />
-                                <Text style={styles.locationTextRow}>17 Km from your location</Text>
+                        <View style={styles.profileInfoContainer}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <Text style={styles.name}>Prisha Mirha</Text>
+                                <MaterialCommunityIcons name="check-decagram" size={20} color="#0084FF" style={{ marginLeft: 4, marginTop: 4 }} />
                             </View>
-                            <View style={styles.tagsRow}>
-                                <View style={[styles.tag, { backgroundColor: '#FDBE01' }]}>
-                                    <Text style={styles.tagTextWhite}>Nomad</Text>
-                                </View>
-                                <View style={[styles.tag, { backgroundColor: '#62A1F3' }]}>
-                                    <Text style={styles.tagTextWhite}>Explorer</Text>
+                            <Text style={styles.email}>prisha.m@example.com</Text>
+
+                            <View style={styles.trustBadgeWrapper}>
+                                <View style={styles.trustBadge}>
+                                    <MaterialCommunityIcons name="shield-check" size={14} color="#4CAF50" />
+                                    <Text style={styles.trustBadgeText}>ID Verified</Text>
                                 </View>
                             </View>
                         </View>
                     </View>
-                </LinearGradient>
+                </View>
 
-                {/* 2. Activity Dashboard (Integrated Stats Row) */}
-                <View style={styles.statsRow}>
-                    <TouchableOpacity style={styles.statColumnRow}>
-                        <Text style={styles.statNumberRow}>30</Text>
-                        <Text style={styles.statLabelRow}>Countries</Text>
+                {/* 2. Activity Dashboard (Quick Stats Row) */}
+                <View style={styles.statsCard}>
+                    <TouchableOpacity style={styles.statColumn}>
+                        <Text style={styles.statNumber}>45</Text>
+                        <Text style={styles.statLabel}>Profile Views</Text>
                     </TouchableOpacity>
-                    <View style={styles.statDividerRow} />
-                    <TouchableOpacity style={styles.statColumnRow}>
-                        <Text style={styles.statNumberRow}>93</Text>
-                        <Text style={styles.statLabelRow}>Mountain</Text>
+                    <View style={styles.statDivider} />
+                    <TouchableOpacity style={styles.statColumn}>
+                        <Text style={styles.statNumber}>12</Text>
+                        <Text style={styles.statLabel}>Shortlisted By</Text>
                     </TouchableOpacity>
-                    <View style={styles.statDividerRow} />
-                    <TouchableOpacity style={styles.statColumnRow}>
-                        <Text style={styles.statNumberRow}>69</Text>
-                        <Text style={styles.statLabelRow}>Cities</Text>
+                    <View style={styles.statDivider} />
+                    <TouchableOpacity style={styles.statColumn}>
+                        <Text style={styles.statNumber}>3</Text>
+                        <Text style={styles.statLabel}>Contact Views</Text>
                     </TouchableOpacity>
                 </View>
 
@@ -194,130 +220,128 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 40,
     },
-    headerGradient: {
-        paddingTop: 10,
-        paddingHorizontal: 20,
-        paddingBottom: 20,
+    coverPhotoContainer: {
+        width: '100%',
+        height: 160,
+        backgroundColor: '#134377',
     },
-    navRow: {
+    coverPhoto: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    profileCard: {
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 16,
+        marginTop: -60, // Overlap cover photo
+        borderRadius: 20,
+        padding: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 12,
+        elevation: 5,
+        marginBottom: 20, // Add gap before stats
+    },
+    profileHeaderRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 30,
     },
-    iconCircleButton: {
-        width: 44,
-        height: 44,
-        borderRadius: 22,
-        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+    profileOuterContainer: {
+        alignItems: 'center',
+        marginTop: -40, // overlap image slightly inside card relative to row
+    },
+    profileImageContainer: {
+        position: 'relative',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: 6, // Create gap for the ring
     },
-    headerNavTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1A1A1A',
+    profileImage: {
+        borderWidth: 4,
+        borderColor: '#FFFFFF',
     },
-    profileRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingBottom: 20,
-    },
-    imageWrapper: {
-        position: 'relative',
-        marginRight: 20,
-    },
-    squircleImage: {
-        width: 90,
-        height: 90,
-        borderRadius: 28, // High border radius to make it a squircle
+    completenessBadge: {
+        position: 'absolute',
+        bottom: -4,
+        backgroundColor: '#4CAF50',
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
         borderWidth: 2,
         borderColor: '#FFFFFF',
     },
-    editButtonOuter: {
-        position: 'absolute',
-        bottom: -4,
-        right: -4,
-        backgroundColor: '#F5F5F5',
-        borderRadius: 18,
-        padding: 4, // creates the gap effect
-    },
-    editButtonInner: {
-        backgroundColor: '#888888', // Grey background from image
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 1,
-        borderColor: '#A8A8A8',
-    },
-    profileDetailsCol: {
-        flex: 1,
-    },
-    nameRowText: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: '#1A1A1A',
-        marginBottom: 6,
-    },
-    jpText: {
-        fontSize: 16,
-        fontWeight: '400',
-        color: '#555555',
-    },
-    locationRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
-    },
-    locationTextRow: {
-        fontSize: 13,
-        color: '#1A1A1A',
-        marginLeft: 4,
-        fontWeight: '500',
-    },
-    tagsRow: {
-        flexDirection: 'row',
-        gap: 8,
-    },
-    tag: {
-        paddingHorizontal: 16,
-        paddingVertical: 6,
-        borderRadius: 16,
-    },
-    tagTextWhite: {
+    completenessText: {
         color: '#FFFFFF',
         fontSize: 12,
         fontWeight: 'bold',
     },
-    statsRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        alignItems: 'center',
-        paddingVertical: 20,
-        backgroundColor: '#F5F5F5', // Blends seamlessly below the gradient
-        marginBottom: 10,
+    profileInfoContainer: {
+        flex: 1,
+        marginLeft: 16,
+        justifyContent: 'center',
+        paddingTop: 8,
     },
-    statColumnRow: {
+    name: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        fontFamily: serifFont,
+        color: '#1A1A1A',
+        marginBottom: 2,
+    },
+    email: {
+        fontSize: 14,
+        color: '#666666',
+    },
+    trustBadgeWrapper: {
+        flexDirection: 'row',
+        marginTop: 8,
+    },
+    trustBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(76, 175, 80, 0.1)', // Light green tint
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        borderRadius: 16,
+    },
+    trustBadgeText: {
+        color: '#4CAF50',
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginLeft: 4,
+    },
+    statsCard: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFFFF',
+        marginHorizontal: 16, // match the new card width edge
+        borderRadius: 20,
+        paddingVertical: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        elevation: 5,
+    },
+    statColumn: {
         flex: 1,
         alignItems: 'center',
+        justifyContent: 'center',
     },
-    statNumberRow: {
-        fontSize: 28,
-        fontWeight: '300', // Light font weight based on image
+    statDivider: {
+        width: 1,
+        backgroundColor: '#EEEEEE',
+        marginVertical: 5,
+    },
+    statNumber: {
+        fontSize: 22,
+        fontWeight: 'bold',
         color: '#1A1A1A',
         marginBottom: 4,
     },
-    statLabelRow: {
+    statLabel: {
         fontSize: 12,
-        color: '#444444',
+        color: '#666666',
         fontWeight: '500',
-    },
-    statDividerRow: {
-        width: 1,
-        height: 30,
-        backgroundColor: '#DDDDDD',
     },
     promoBanner: {
         flexDirection: 'row',
