@@ -304,8 +304,8 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>{profileFor === 'myself' ? 'You are' : `${getLabelPrefix()} is`}</Text>
             <View style={styles.genderOptions}>
                 {[
-                    { id: 'male', label: 'Male', sub: profileFor === 'myself' ? "I'mL looking for a female" : "I'mL looking for a female for him" },
-                    { id: 'female', label: 'Female', sub: profileFor === 'myself' ? "I'mL looking for a male" : "I'mL looking for a male for him" },
+                    { id: 'male', label: 'Male', sub: profileFor === 'myself' ? "I'm looking for a female" : "I'mL looking for a female for him" },
+                    { id: 'female', label: 'Female', sub: profileFor === 'myself' ? "I'm looking for a male" : "I'mL looking for a male for him" },
                 ].map((opt) => (
                     <TouchableOpacity
                         key={opt.id}
