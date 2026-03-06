@@ -3,9 +3,9 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -45,40 +45,40 @@ export default function TabLayout() {
         options={{
           headerShown: false,
           title: 'Discover',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house" color={color} />,
+          tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "home" : "home-outline"} color={color} />,
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
           title: 'Chat',
-          tabBarIcon: ({ color }) => <IconSymbol size={26} name="message" color={color} />,
+          tabBarIcon: ({ color, focused }) => <Ionicons size={26} name={focused ? "chatbubble" : "chatbubble-outline"} color={color} />,
         }}
       />
       <Tabs.Screen
         name="matches"
         options={{
           title: 'Matches',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="heart" color={color} />,
+          tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "heart" : "heart-outline"} color={color} />,
         }}
       />
       <Tabs.Screen
         name="premium"
         options={{
           title: 'Premium',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="crown" color={color} />,
+          tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "star" : "star-outline"} color={color} />, // Crown isn't a standard ionicon, star/ribbon works as fallback or we can use MaterialCommunityIcons 'crown'/'crown-outline'
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="person" color={color} />,
+          tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "person" : "person-outline"} color={color} />,
         }}
       />
-      {/* Remove explore by not including it, or we could explicitly hide it if it still exists */}
+      {/* Remove search since it's now integrated or redundant, or just hide if we need to */}
       <Tabs.Screen
-        name="explore"
+        name="search"
         options={{
           href: null,
         }}
