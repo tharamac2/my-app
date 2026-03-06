@@ -51,6 +51,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
+          headerShown: false,
           title: 'Chat',
           tabBarIcon: ({ color, focused }) => <Ionicons size={26} name={focused ? "chatbubble" : "chatbubble-outline"} color={color} />,
         }}
@@ -58,6 +59,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="matches"
         options={{
+          headerShown: false,
           title: 'Matches',
           tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "heart" : "heart-outline"} color={color} />,
         }}
@@ -65,6 +67,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="premium"
         options={{
+          headerShown: false,
           title: 'Premium',
           tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "star" : "star-outline"} color={color} />, // Crown isn't a standard ionicon, star/ribbon works as fallback or we can use MaterialCommunityIcons 'crown'/'crown-outline'
         }}
@@ -72,6 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
+          headerShown: false,
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => <Ionicons size={28} name={focused ? "person" : "person-outline"} color={color} />,
         }}
