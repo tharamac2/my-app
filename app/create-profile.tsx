@@ -11,7 +11,6 @@ import {
     Image,
     Modal,
     Platform,
-    SafeAreaView,
     ScrollView,
     StyleSheet,
     Text,
@@ -19,6 +18,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -753,7 +753,6 @@ export default function CreateProfileScreen() {
                     </View>
                 )}
             </ScrollView>
-            <View style={styles.homeIndicator} />
             {renderPickerModal()}
         </SafeAreaView>
     );
@@ -1115,15 +1114,6 @@ const styles = StyleSheet.create({
         fontFamily: serifFont,
         fontWeight: 'bold',
         color: '#1A1A1A',
-    },
-    homeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 140,
-        height: 5,
-        backgroundColor: '#1A1A1A',
-        borderRadius: 10,
-        alignSelf: 'center',
     },
     uploadedFullImage: {
         width: '100%',

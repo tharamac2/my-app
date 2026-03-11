@@ -1,6 +1,7 @@
 import { Colors } from '@/constants/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     Animated,
     Dimensions,
@@ -12,7 +13,6 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-
 const serifFont = Platform.select({
     ios: 'Georgia',
     android: 'serif',
@@ -24,21 +24,21 @@ const { width, height } = Dimensions.get('window');
 const SLIDES = [
     {
         id: '1',
-        title: 'Lorem Ipsum is simply',
-        description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the ,',
-        image: 'https://images.unsplash.com/photo-1610486801901-49b8026131f4?q=80&w=2670&auto=format&fit=crop',
+        title: 'Find Your Perfect Match',
+        description: 'Explore profiles that match your preferences and start your journey towards a happy life together.',
+        image: 'https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?q=80&w=2670&auto=format&fit=crop',
     },
     {
         id: '2',
-        title: 'Lorem Ipsum is simply',
-        description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the ,',
-        image: 'https://images.unsplash.com/photo-1595180633830-ec47902d338f?q=80&w=2670&auto=format&fit=crop',
+        title: 'Verified & Trusted Profiles',
+        description: 'Your safety is our priority. Every profile is meticulously verified to ensure a secure matchmaking environment.',
+        image: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?q=80&w=2670&auto=format&fit=crop',
     },
     {
         id: '3',
-        title: 'Lorem Ipsum is simply',
-        description: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the ,',
-        image: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?q=80&w=2669&auto=format&fit=crop',
+        title: 'Astrological Compatibility',
+        description: 'Discover deep insights into your compatibility with detailed Vedic astrology matching for a harmonious union.',
+        image: require('../assets/images/astrology_bg.png'),
     },
 ];
 
@@ -56,6 +56,22 @@ export default function WelcomeScreen() {
 
     const viewConfig = useRef({ viewAreaCoveragePercentThreshold: 50 }).current;
 
+    useEffect(() => {
+        let timer: any;
+
+        if (currentIndex < SLIDES.length - 1) {
+            timer = setTimeout(() => {
+                scrollToNext();
+            }, 3000);
+        }
+
+        return () => {
+            if (timer) {
+                clearTimeout(timer);
+            }
+        };
+    }, [currentIndex]);
+
     const scrollToNext = () => {
         if (currentIndex < SLIDES.length - 1) {
             slidesRef.current?.scrollToIndex({ index: currentIndex + 1 });
@@ -69,44 +85,50 @@ export default function WelcomeScreen() {
     };
 
     const renderItem = ({ item }: { item: typeof SLIDES[0] }) => {
+        const imageSource = typeof item.image === 'string' ? { uri: item.image } : item.image;
         return (
             <View style={styles.slide}>
                 <ImageBackground
-                    source={{ uri: item.image }}
+                    source={imageSource}
                     style={styles.image}
                     resizeMode="cover"
                 >
-                    <View style={styles.contentOverlay}>
-                        <View style={styles.bottomCard}>
-                            <Text style={styles.cardTitle}>{item.title}</Text>
-                            <Text style={styles.cardDescription}>{item.description}</Text>
+                    <LinearGradient
+                        colors={['transparent', 'rgba(0,0,0,0.4)', 'rgba(0,0,0,0.8)']}
+                        style={styles.gradient}
+                    >
+                        <View style={styles.contentOverlay}>
+                            <View style={styles.bottomCard}>
+                                <Text style={styles.cardTitle}>{item.title}</Text>
+                                <Text style={styles.cardDescription}>{item.description}</Text>
 
-                            <View style={styles.paginationContainer}>
-                                {SLIDES.map((_, index) => {
-                                    const isCurrent = index === currentIndex;
-                                    return (
-                                        <View
-                                            key={index}
-                                            style={[
-                                                styles.dot,
-                                                isCurrent ? styles.activeDot : styles.inactiveDot,
-                                            ]}
-                                        />
-                                    );
-                                })}
+                                <View style={styles.paginationContainer}>
+                                    {SLIDES.map((_, index) => {
+                                        const isCurrent = index === currentIndex;
+                                        return (
+                                            <View
+                                                key={index}
+                                                style={[
+                                                    styles.dot,
+                                                    isCurrent ? styles.activeDot : styles.inactiveDot,
+                                                ]}
+                                            />
+                                        );
+                                    })}
+                                </View>
+
+                                <TouchableOpacity
+                                    style={styles.button}
+                                    onPress={scrollToNext}
+                                    activeOpacity={0.8}
+                                >
+                                    <Text style={styles.buttonText}>
+                                        {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Next'}
+                                    </Text>
+                                </TouchableOpacity>
                             </View>
-
-                            <TouchableOpacity
-                                style={styles.button}
-                                onPress={scrollToNext}
-                                activeOpacity={0.8}
-                            >
-                                <Text style={styles.buttonText}>
-                                    {currentIndex === SLIDES.length - 1 ? 'Get Started' : 'Next'}
-                                </Text>
-                            </TouchableOpacity>
                         </View>
-                    </View>
+                    </LinearGradient>
                 </ImageBackground>
             </View>
         );
@@ -139,7 +161,6 @@ export default function WelcomeScreen() {
                     </TouchableOpacity>
                 </View>
             )}
-            <View style={styles.homeIndicator} />
         </View>
     );
 }
@@ -161,6 +182,11 @@ const styles = StyleSheet.create({
         width,
         height,
     },
+    gradient: {
+        flex: 1,
+        width,
+        height,
+    },
     contentOverlay: {
         flex: 1,
         justifyContent: 'flex-end',
@@ -173,27 +199,29 @@ const styles = StyleSheet.create({
     },
     skipButton: {
         backgroundColor: Colors.light.brandYellow,
-        paddingHorizontal: 35,
-        paddingVertical: 12,
-        borderRadius: 30,
+        paddingHorizontal: 25,
+        height: 40,
+        borderRadius: 10,
         borderWidth: 2,
         borderColor: '#FFF',
-        elevation: 5,
+        elevation: 2,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
+        shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.2,
-        shadowRadius: 4,
+        shadowRadius: 2,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     skipText: {
         color: '#1A1A1A',
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: 'bold',
     },
     bottomCard: {
         backgroundColor: Colors.light.brandYellow,
         borderTopLeftRadius: 60,
         borderTopRightRadius: 60,
-        paddingHorizontal: 40,
+        paddingHorizontal: 20,
         paddingTop: 50,
         paddingBottom: 40,
         alignItems: 'center',
@@ -234,26 +262,22 @@ const styles = StyleSheet.create({
     },
     button: {
         width: '100%',
-        height: 60,
-        borderRadius: 30,
+        height: 52,
+        borderRadius: 12,
         borderWidth: 1.5,
         borderColor: '#1A1A1A',
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
     },
     buttonText: {
         color: '#1A1A1A',
-        fontSize: 24,
-        fontFamily: serifFont,
+        fontSize: 18,
         fontWeight: 'bold',
-    },
-    homeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 140,
-        height: 5,
-        backgroundColor: '#1A1A1A',
-        borderRadius: 10,
-        alignSelf: 'center',
     },
 });
