@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+    Dimensions,
     FlatList,
     Image,
     Platform,
@@ -11,140 +13,141 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+const { width } = Dimensions.get('window');
+
 const serifFont = Platform.select({
     ios: 'Georgia',
     android: 'serif',
     default: 'serif',
 });
 
-// Dummy Data for different segments
-const PENDING_REQUESTS = [
+const LIKED_YOU = [
     {
-        id: 'p1',
-        name: 'Rohan Sharma',
-        age: 29,
-        details: 'Software Engineer • Bangalore',
-        matchPercentage: 88,
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-    },
-    {
-        id: 'p2',
-        name: 'Arjun Verma',
-        age: 31,
-        details: 'Doctor • Mumbai',
-        matchPercentage: 72,
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-    },
-];
-
-const ACCEPTED_MATCHES = [
-    {
-        id: 'a1',
-        name: 'Vikram Singh',
-        age: 30,
-        details: 'Entrepreneur • Delhi',
-        matchPercentage: 92,
+        id: '1',
+        name: 'Kalyani Priyadarshan',
+        stats: '5.5',
+        location: 'kerala, india',
+        profession: 'Software Engineer',
         imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
     },
-];
-
-const MUTUAL_MATCHES = [
     {
-        id: 'm1',
-        name: 'Siddharth Rao',
-        age: 28,
-        details: 'Architect • Chennai',
-        matchPercentage: 95,
+        id: '2',
+        name: 'Vijaya lakshmi',
+        stats: '5.5',
+        location: 'Tamil Nadu, india',
+        profession: 'Software Engineer',
+        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop',
+    },
+    {
+        id: '3',
+        name: 'selvi',
+        stats: '5.5',
+        location: '',
+        profession: 'Software Engineer',
+        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
+    },
+    {
+        id: '4',
+        name: 'Kalyani',
+        stats: '5.5',
+        location: 'kerala, india',
+        profession: 'Software Engineer',
         imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop',
     },
 ];
 
-type TabType = 'Pending' | 'Accepted' | 'Mutual';
+const YOUR_LIKE = [
+    {
+        id: 'y1',
+        name: 'Aditi Rao',
+        stats: '5.7',
+        location: 'Hyderabad, india',
+        profession: 'Lead Designer',
+        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
+    },
+];
 
-export default function MatchesScreen() {
-    const [activeTab, setActiveTab] = useState<TabType>('Pending');
+type TabType = 'liked you' | 'your like';
 
-    const getActiveData = () => {
-        switch (activeTab) {
-            case 'Accepted': return ACCEPTED_MATCHES;
-            case 'Mutual': return MUTUAL_MATCHES;
-            case 'Pending':
-            default: return PENDING_REQUESTS;
-        }
-    };
+export default function FavouritesScreen() {
+    const [activeTab, setActiveTab] = useState<TabType>('liked you');
+    const router = useRouter();
 
-    const renderMatchCard = ({ item }: { item: any }) => (
+    const renderItem = ({ item }: { item: typeof LIKED_YOU[0] }) => (
         <View style={styles.card}>
-            <View style={styles.cardContent}>
-                <Image source={{ uri: item.imageUrl }} style={styles.avatar} />
-
-                <View style={styles.infoContainer}>
-                    <Text style={styles.name}>{item.name}, {item.age}</Text>
-                    <Text style={styles.details}>{item.details}</Text>
-
-                    <View style={styles.compatibilityTag}>
-                        <Ionicons name="sparkles" size={14} color="#FDBE01" />
-                        <Text style={styles.compatibilityText}>{item.matchPercentage}% Match</Text>
-                    </View>
-                </View>
+            <View style={styles.imageContainer}>
+                <Image source={{ uri: item.imageUrl }} style={styles.image} />
             </View>
 
-            <View style={styles.actionRow}>
-                {activeTab === 'Pending' ? (
-                    <>
-                        <TouchableOpacity style={[styles.actionBtn, styles.declineBtn]}>
-                            <Ionicons name="close" size={20} color="#666" />
-                            <Text style={styles.declineText}>Decline</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={[styles.actionBtn, styles.acceptBtn]}>
-                            <Ionicons name="checkmark" size={20} color="#1A1A1A" />
-                            <Text style={styles.acceptText}>Accept</Text>
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <TouchableOpacity style={[styles.actionBtn, styles.messageBtn]}>
-                        <Ionicons name="chatbubble-ellipses" size={20} color="#1A1A1A" />
-                        <Text style={styles.acceptText}>Send Message</Text>
+            <View style={styles.infoContainer}>
+                <Text style={styles.nameText}>{item.name}</Text>
+                <View style={styles.statsRow}>
+                    <Text style={styles.statsText}>{item.stats}</Text>
+                    {item.location ? <Text style={styles.statsText}>  {item.location}</Text> : null}
+                </View>
+                <Text style={styles.professionText}>{item.profession}</Text>
+
+                <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                        style={styles.profileBtn}
+                        onPress={() => router.push({
+                            pathname: '/profile-detail',
+                            params: { name: item.name }
+                        })}
+                    >
+                        <Text style={styles.profileBtnText}>profile</Text>
                     </TouchableOpacity>
-                )}
+                    <TouchableOpacity style={styles.messageBtn}>
+                        <Text style={styles.messageBtnText}>Message</Text>
+                    </TouchableOpacity>
+                </View>
             </View>
         </View>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
+        <SafeAreaView style={styles.container} edges={['top']}>
+            {/* Header */}
             <View style={styles.header}>
-                <Text style={styles.title}>Your Matches</Text>
+                <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+                    <Ionicons name="chevron-back" size={30} color="#FDBE01" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Favourites</Text>
+                <View style={{ width: 40 }} />
             </View>
 
-            {/* Segmented Control */}
-            <View style={styles.segmentedControl}>
-                {(['Pending', 'Accepted', 'Mutual'] as TabType[]).map((tab) => (
-                    <TouchableOpacity
-                        key={tab}
-                        style={[styles.segmentBtn, activeTab === tab && styles.segmentBtnActive]}
-                        onPress={() => setActiveTab(tab)}
-                    >
-                        <Text style={[styles.segmentText, activeTab === tab && styles.segmentTextActive]}>
-                            {tab}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
+            {/* Tabs */}
+            <View style={styles.tabContainer}>
+                <TouchableOpacity
+                    onPress={() => setActiveTab('liked you')}
+                    style={styles.tabItem}
+                >
+                    <Text style={[
+                        styles.tabText,
+                        activeTab === 'liked you' ? styles.tabTextActive : styles.tabTextInactive
+                    ]}>
+                        liked you
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setActiveTab('your like')}
+                    style={styles.tabItem}
+                >
+                    <Text style={[
+                        styles.tabTextHeader,
+                        activeTab === 'your like' ? styles.tabTextActiveHeader : styles.tabTextInactiveHeader
+                    ]}>
+                        your like
+                    </Text>
+                </TouchableOpacity>
             </View>
 
-            {/* Matches List */}
             <FlatList
-                data={getActiveData()}
+                data={activeTab === 'liked you' ? LIKED_YOU : YOUR_LIKE}
                 keyExtractor={item => item.id}
-                renderItem={renderMatchCard}
+                renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Ionicons name="heart-dislike-outline" size={48} color="#CCC" />
-                        <Text style={styles.emptyText}>No {activeTab.toLowerCase()} matches yet.</Text>
-                    </View>
-                }
             />
         </SafeAreaView>
     );
@@ -153,153 +156,134 @@ export default function MatchesScreen() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F9F9F9',
+        backgroundColor: '#FFFFFF',
     },
     header: {
-        paddingHorizontal: 20,
-        paddingTop: 10,
-        paddingBottom: 15,
-        backgroundColor: '#FFFFFF',
-    },
-    title: {
-        fontSize: 28,
-        fontFamily: serifFont,
-        fontWeight: 'bold',
-        color: '#1A1A1A',
-    },
-    segmentedControl: {
         flexDirection: 'row',
-        backgroundColor: '#EEEEEE',
-        marginHorizontal: 20,
-        marginTop: 15,
-        marginBottom: 10,
-        borderRadius: 25,
-        padding: 4,
-    },
-    segmentBtn: {
-        flex: 1,
-        paddingVertical: 10,
         alignItems: 'center',
-        borderRadius: 21,
+        justifyContent: 'space-between',
+        paddingHorizontal: 15,
+        paddingVertical: 20,
     },
-    segmentBtnActive: {
-        backgroundColor: '#FFFFFF',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 2,
+    backButton: {
+        padding: 5,
     },
-    segmentText: {
-        fontSize: 14,
-        fontWeight: '600',
-        color: '#666666',
-    },
-    segmentTextActive: {
+    headerTitle: {
+        fontSize: 32,
+        fontFamily: serifFont,
+        fontWeight: '700',
         color: '#1A1A1A',
-        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingHorizontal: 30,
+        marginBottom: 30,
+        marginTop: 10,
+    },
+    tabItem: {
+        paddingVertical: 5,
+    },
+    tabText: {
+        fontSize: 24,
+        fontWeight: '700',
+    },
+    tabTextActive: {
+        color: '#FDBE01',
+    },
+    tabTextInactive: {
+        color: '#000000',
+    },
+    tabTextHeader: {
+        fontSize: 24,
+        fontFamily: serifFont,
+        fontWeight: '700',
+    },
+    tabTextActiveHeader: {
+        color: '#FDBE01',
+    },
+    tabTextInactiveHeader: {
+        color: '#000000',
     },
     listContent: {
-        padding: 20,
+        paddingHorizontal: 20,
         paddingBottom: 40,
-        gap: 15,
     },
     card: {
-        backgroundColor: '#FFFFFF',
-        borderRadius: 20,
-        padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.05,
-        shadowRadius: 8,
-        elevation: 3,
-    },
-    cardContent: {
         flexDirection: 'row',
-        marginBottom: 16,
+        marginBottom: 35,
+        alignItems: 'center',
     },
-    avatar: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        marginRight: 16,
+    imageContainer: {
+        width: 170,
+        height: 100,
+        borderRadius: 15,
+        borderWidth: 2,
+        borderColor: '#FDBE01',
+        overflow: 'hidden',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     infoContainer: {
         flex: 1,
-        justifyContent: 'center',
+        marginLeft: 20,
     },
-    name: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#1A1A1A',
+    nameText: {
+        fontSize: 16,
+        fontFamily: serifFont,
+        fontWeight: '700',
+        color: '#000000',
         marginBottom: 4,
     },
-    details: {
-        fontSize: 13,
-        color: '#666666',
-        marginBottom: 8,
-    },
-    compatibilityTag: {
+    statsRow: {
         flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#FFF8E1',
-        alignSelf: 'flex-start',
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 12,
+        marginBottom: 4,
     },
-    compatibilityText: {
-        fontSize: 12,
-        fontWeight: 'bold',
-        color: '#F9A825',
-        marginLeft: 4,
+    statsText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#000000',
     },
-    actionRow: {
+    professionText: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#000000',
+        marginBottom: 10,
+    },
+    buttonRow: {
         flexDirection: 'row',
-        gap: 12,
-        borderTopWidth: 1,
-        borderTopColor: '#F0F0F0',
-        paddingTop: 16,
+        gap: 20,
     },
-    actionBtn: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        borderRadius: 25,
-        borderWidth: 1,
-    },
-    declineBtn: {
-        backgroundColor: '#FFFFFF',
-        borderColor: '#E0E0E0',
-    },
-    declineText: {
-        color: '#666666',
-        fontWeight: '600',
-        marginLeft: 6,
-    },
-    acceptBtn: {
+    profileBtn: {
         backgroundColor: '#FDBE01',
-        borderColor: '#FDBE01',
+        paddingHorizontal: 20,
+        paddingVertical: 6,
+        borderRadius: 20,
+        minWidth: 70,
+        alignItems: 'center',
     },
-    acceptText: {
-        color: '#1A1A1A',
-        fontWeight: 'bold',
-        marginLeft: 6,
+    profileBtnText: {
+        color: '#000000',
+        fontSize: 14,
+        fontWeight: '700',
     },
     messageBtn: {
-        backgroundColor: '#FDBE01',
-        borderColor: '#FDBE01',
-    },
-    emptyContainer: {
+        backgroundColor: '#FFFFFF',
+        paddingHorizontal: 15,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: '#000000',
+        minWidth: 70,
         alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 60,
     },
-    emptyText: {
-        fontSize: 16,
-        color: '#999',
-        marginTop: 12,
+    messageBtnText: {
+        color: '#000000',
+        fontSize: 14,
+        fontWeight: '700',
     },
 });

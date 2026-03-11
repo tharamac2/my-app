@@ -1,6 +1,8 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
+    Alert,
+    Linking,
     Platform,
     ScrollView,
     StyleSheet,
@@ -47,6 +49,37 @@ const SUBSCRIPTION_PLANS = [
 ];
 
 export default function PremiumScreen() {
+    const handleSubscribe = async (amount: string, planName: string) => {
+        const cleanAmount = amount.replace(/[^0-9]/g, '');
+        // UPI Payment Link to specific number: +91 9123585284
+        const upiUrl = `upi://pay?pa=9123585284@upi&pn=MyApp&am=${cleanAmount}&cu=INR&tn=${planName.replace(/\s+/g, '_')}_Subscription`;
+        const gpayStoreUrl = Platform.select({
+            android: 'https://play.google.com/store/apps/details?id=com.google.android.apps.nbu.paisa.user',
+            ios: 'https://apps.apple.com/in/app/google-pay/id1193357041'
+        });
+
+        try {
+            const canOpen = await Linking.canOpenURL(upiUrl);
+
+            if (canOpen) {
+                await Linking.openURL(upiUrl);
+            } else {
+                Alert.alert(
+                    'UPI App Not Found',
+                    'We couldn\'t find any UPI apps (like GPay) on your device. Would you like to download Google Pay?',
+                    [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Download GPay', onPress: () => Linking.openURL(gpayStoreUrl!) }
+                    ]
+                );
+            }
+        } catch (error) {
+            console.error('Error opening UPI:', error);
+            if (gpayStoreUrl) {
+                Linking.openURL(gpayStoreUrl);
+            }
+        }
+    };
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -84,10 +117,13 @@ export default function PremiumScreen() {
                                 ))}
                             </View>
 
-                            <TouchableOpacity style={[
-                                styles.subBtn,
-                                plan.textColor === '#FFFFFF' ? { backgroundColor: '#FDBE01' } : { backgroundColor: '#1A1A1A' }
-                            ]}>
+                            <TouchableOpacity
+                                style={[
+                                    styles.subBtn,
+                                    plan.textColor === '#FFFFFF' ? { backgroundColor: '#FDBE01' } : { backgroundColor: '#1A1A1A' }
+                                ]}
+                                onPress={() => handleSubscribe(plan.price, plan.name)}
+                            >
                                 <Text style={[
                                     styles.subBtnText,
                                     plan.textColor === '#FFFFFF' ? { color: '#1A1A1A' } : { color: '#FFFFFF' }

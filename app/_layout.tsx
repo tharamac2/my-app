@@ -47,6 +47,11 @@ export default function RootLayout() {
         <Stack.Screen name="partner-preferences" options={{ headerShown: false }} />
         <Stack.Screen name="manage-photos" options={{ headerShown: false }} />
         <Stack.Screen name="astrology-details" options={{ headerShown: false }} />
+        <Stack.Screen name="profile-detail" options={{ headerShown: false }} />
+        <Stack.Screen name="chat-detail" options={{ headerShown: false }} />
+        <Stack.Screen name="all-matches" options={{ headerShown: false }} />
+        <Stack.Screen name="recently-viewed" options={{ headerShown: false }} />
+        <Stack.Screen name="notifications" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
       </Stack>
       <StatusBar style="auto" />

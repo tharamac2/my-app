@@ -104,7 +104,7 @@ export default function ProfileDashboard() {
                         </View>
                         <Text style={styles.promoSubtext}>Upgrade to Premium to message matches directly.</Text>
                     </View>
-                    <TouchableOpacity style={styles.promoBtn}>
+                    <TouchableOpacity style={styles.promoBtn} onPress={() => router.push('/premium')}>
                         <Text style={styles.promoBtnText}>Upgrade Now</Text>
                     </TouchableOpacity>
                 </View>

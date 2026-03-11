@@ -1,7 +1,9 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
+    Alert,
     Dimensions,
     Image,
     ScrollView,
@@ -20,12 +22,76 @@ const itemSize = (width - padding * 2 - gap * 2) / 3;
 export default function ManagePhotosScreen() {
     const router = useRouter();
 
-    // Dummy Photos
-    const photos = [
+    const [photos, setPhotos] = React.useState([
         { id: '1', uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop', isPrimary: true },
         { id: '2', uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop', isPrimary: false },
         { id: '3', uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop', isPrimary: false },
-    ];
+    ]);
+
+    const pickImage = async (replaceId?: string) => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') {
+            Alert.alert('Permission Denied', 'We need camera roll permissions to upload photos.');
+            return;
+        }
+
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [3, 4],
+            quality: 0.8,
+        });
+
+        if (!result.canceled) {
+            const newUri = result.assets[0].uri;
+            if (replaceId) {
+                setPhotos(current => current.map(p => p.id === replaceId ? { ...p, uri: newUri } : p));
+            } else {
+                if (photos.length >= 6) {
+                    Alert.alert('Limit Reached', 'You can only upload up to 6 photos.');
+                    return;
+                }
+                const newPhoto = {
+                    id: Date.now().toString(),
+                    uri: newUri,
+                    isPrimary: photos.length === 0,
+                };
+                setPhotos([...photos, newPhoto]);
+            }
+        }
+    };
+
+    const deletePhoto = (id: string) => {
+        Alert.alert(
+            'Delete Photo',
+            'Are you sure you want to remove this photo?',
+            [
+                { text: 'Cancel', style: 'cancel' },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => {
+                        setPhotos(current => {
+                            const filtered = current.filter(p => p.id !== id);
+                            // If we deleted the primary, make the first remaining one primary
+                            if (current.find(p => p.id === id)?.isPrimary && filtered.length > 0) {
+                                filtered[0].isPrimary = true;
+                            }
+                            return filtered;
+                        });
+                    }
+                }
+            ]
+        );
+    };
+
+    const setPrimary = (id: string) => {
+        setPhotos(current => current.map(p => ({
+            ...p,
+            isPrimary: p.id === id
+        })));
+        Alert.alert('Profile Picture Updated');
+    };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -41,9 +107,20 @@ export default function ManagePhotosScreen() {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
                 <View style={styles.uploadSection}>
-                    <TouchableOpacity style={styles.uploadBtn}>
-                        <Ionicons name="cloud-upload-outline" size={32} color="#134377" style={styles.uploadIcon} />
-                        <Text style={styles.uploadTitle}>Upload New Photo</Text>
+                    <TouchableOpacity
+                        style={[styles.uploadBtn, photos.length >= 6 && styles.uploadBtnDisabled]}
+                        onPress={() => pickImage()}
+                        disabled={photos.length >= 6}
+                    >
+                        <Ionicons
+                            name="cloud-upload-outline"
+                            size={32}
+                            color={photos.length >= 6 ? "#CCCCCC" : "#134377"}
+                            style={styles.uploadIcon}
+                        />
+                        <Text style={[styles.uploadTitle, photos.length >= 6 && { color: "#CCCCCC" }]}>
+                            {photos.length >= 6 ? 'Limit Reached' : 'Upload New Photo'}
+                        </Text>
                         <Text style={styles.uploadSubtext}>JPG, PNG up to 10MB</Text>
                     </TouchableOpacity>
                 </View>
@@ -53,7 +130,9 @@ export default function ManagePhotosScreen() {
                 <View style={styles.photoGrid}>
                     {photos.map((photo) => (
                         <View key={photo.id} style={styles.photoContainer}>
-                            <Image source={{ uri: photo.uri }} style={styles.image} />
+                            <TouchableOpacity activeOpacity={0.9} onPress={() => setPrimary(photo.id)}>
+                                <Image source={{ uri: photo.uri }} style={styles.image} />
+                            </TouchableOpacity>
 
                             {photo.isPrimary && (
                                 <View style={styles.primaryBadge}>
@@ -61,17 +140,22 @@ export default function ManagePhotosScreen() {
                                 </View>
                             )}
 
-                            <TouchableOpacity style={styles.deleteBtn}>
-                                <Ionicons name="trash" size={16} color="#FFFFFF" />
-                            </TouchableOpacity>
+                            <View style={styles.actionRow}>
+                                <TouchableOpacity style={styles.actionBtn} onPress={() => pickImage(photo.id)}>
+                                    <Ionicons name="pencil" size={14} color="#FFFFFF" />
+                                </TouchableOpacity>
+                                <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#FF4444' }]} onPress={() => deletePhoto(photo.id)}>
+                                    <Ionicons name="trash" size={14} color="#FFFFFF" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
                     ))}
 
                     {/* Empty slots */}
                     {Array.from({ length: 6 - photos.length }).map((_, i) => (
-                        <View key={`empty-${i}`} style={styles.emptySlot}>
+                        <TouchableOpacity key={`empty-${i}`} style={styles.emptySlot} onPress={() => pickImage()}>
                             <Ionicons name="add" size={30} color="#CCCCCC" />
-                        </View>
+                        </TouchableOpacity>
                     ))}
                 </View>
 
@@ -179,16 +263,24 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#1A1A1A',
     },
-    deleteBtn: {
+    actionRow: {
         position: 'absolute',
         top: 6,
         right: 6,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        flexDirection: 'row',
+        gap: 6,
+    },
+    actionBtn: {
+        backgroundColor: 'rgba(0,0,0,0.6)',
         width: 28,
         height: 28,
         borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    uploadBtnDisabled: {
+        borderColor: '#CCCCCC',
+        backgroundColor: '#F9F9F9',
     },
     emptySlot: {
         width: itemSize,

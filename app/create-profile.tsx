@@ -132,8 +132,11 @@ export default function CreateProfileScreen() {
             case 'height': setHeight(value); break;
             case 'weight': setWeight(value); break;
             case 'qualification': setQualification(value); break;
-            case 'zodiac': setZodiac(value); break;
-            case 'star': setStar(value); break;
+            case 'raasi':
+                setZodiac(value);
+                setStar(''); // Reset star when Raasi changes
+                break;
+            case 'natchatiram': setStar(value); break;
             case 'income': setIncome(value); break;
             case 'worksWith': setWorksWith(value); break;
             case 'worksAs': setWorksAs(value); break;
@@ -159,6 +162,21 @@ export default function CreateProfileScreen() {
         return age;
     };
 
+    const RAASI_STAR_MAP: Record<string, string[]> = {
+        'Aries': ['Ashwini', 'Bharani', 'Krithika'],
+        'Taurus': ['Krithika', 'Rohini', 'Mrigashirsha'],
+        'Gemini': ['Mrigashirsha', 'Thiruvadhira', 'Punarpusam'],
+        'Cancer': ['Punarpusam', 'Poosam', 'Ayilyam'],
+        'Leo': ['Magam', 'Pooram', 'Uthiram'],
+        'Virgo': ['Uthiram', 'Hastham', 'Chitra'],
+        'Libra': ['Chitra', 'Swathi', 'Vishakam'],
+        'Scorpio': ['Vishakam', 'Anusham', 'Kettai'],
+        'Sagittarius': ['Moolam', 'Pooradam', 'Uthiradam'],
+        'Capricorn': ['Uthiradam', 'Thironam', 'Avittam'],
+        'Aquarius': ['Avittam', 'Sathayam', 'Poorattadhi'],
+        'Pisces': ['Poorattadhi', 'Uthirattadhi', 'Revathi']
+    };
+
     const OPTIONS = {
         religion: ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Other'],
         community: ['Brahmins', 'Rajputs', 'Agarwals', 'Jats', 'Marathas', 'Kayasthas', 'Other'],
@@ -170,8 +188,8 @@ export default function CreateProfileScreen() {
         height: ["4'5\"", "4'10\"", "5'0\"", "5'2\"", "5'5\"", "5'8\"", "6'0\"", "6'2\"", "6'5\""],
         weight: ['40 kg', '50 kg', '60 kg', '70 kg', '80 kg', '90 kg', '100 kg'],
         qualification: ['B.Tech', 'M.Tech', 'MBA', 'MBBS', 'PhD', 'B.Com', 'M.Com', 'Other'],
-        zodiac: ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'],
-        star: ['Ashwini', 'Bharani', 'Krittika', 'Rohini', 'Mrigashira', 'Other'],
+        raasi: Object.keys(RAASI_STAR_MAP),
+        natchatiram: zodiac ? RAASI_STAR_MAP[zodiac] : [],
         income: ['2 - 5 LPA', '5 - 10 LPA', '10 - 20 LPA', '20 - 50 LPA', '50+ LPA'],
         worksWith: ['Private Sector', 'Government Sector', 'Defense', 'Self Employed', 'Business', 'Not Working'],
         worksAs: ['Engineer', 'Doctor', 'Teacher', 'Manager', 'Entrepreneur', 'Architect', 'Artist', 'Other'],
@@ -497,8 +515,8 @@ export default function CreateProfileScreen() {
             <Text style={styles.title}>Horoscopes information</Text>
             <View style={styles.multiRowInput}>
                 <View style={styles.halfInput}>
-                    <Text style={styles.inputSubTitle}>Zodiac</Text>
-                    <TouchableOpacity style={styles.dropdownInputSmall} onPress={() => openPicker('zodiac', 'Select Zodiac', OPTIONS.zodiac)}>
+                    <Text style={styles.inputSubTitle}>Zodiac Sign</Text>
+                    <TouchableOpacity style={styles.dropdownInputSmall} onPress={() => openPicker('raasi', 'Select Zodiac Sign', OPTIONS.raasi)}>
                         <Text style={zodiac ? styles.dropdownActiveTextSmall : styles.dropdownPlaceholderText}>
                             {zodiac || 'Select'}
                         </Text>
@@ -506,8 +524,11 @@ export default function CreateProfileScreen() {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.halfInput}>
-                    <Text style={styles.inputSubTitle}>Star</Text>
-                    <TouchableOpacity style={styles.dropdownInputSmall} onPress={() => openPicker('star', 'Select Star', OPTIONS.star)}>
+                    <Text style={styles.inputSubTitle}>Birth Star</Text>
+                    <TouchableOpacity
+                        style={[styles.dropdownInputSmall, !zodiac && { opacity: 0.5 }]}
+                        onPress={() => zodiac ? openPicker('natchatiram', 'Select Birth Star', OPTIONS.natchatiram) : Alert.alert('Select Zodiac Sign', 'Please select a Zodiac Sign first')}
+                    >
                         <Text style={star ? styles.dropdownActiveTextSmall : styles.dropdownPlaceholderText}>
                             {star || 'Select'}
                         </Text>
@@ -567,45 +588,63 @@ export default function CreateProfileScreen() {
 
     const renderStepUploads = () => (
         <View style={styles.stepContent}>
-            {renderHeaderIcon('details')}
-            <Text style={styles.title}>Add Horoscope</Text>
-            {horoscopeImage ? (
-                <View style={styles.uploadBoxFull}>
-                    <Image source={{ uri: horoscopeImage }} style={styles.uploadedFullImage} />
-                    <TouchableOpacity style={styles.removeIconBadge} onPress={() => removeImage('horoscope')}>
-                        <Ionicons name="close-circle" size={24} color="#FF4444" />
-                    </TouchableOpacity>
-                </View>
-            ) : (
-                <TouchableOpacity style={styles.uploadBoxFull} onPress={() => pickImage('horoscope')}>
-                    <View style={styles.plusBg}>
-                        <Ionicons name="add" size={30} color="#000" />
-                    </View>
-                    <Text style={styles.uploadText}>Upload Image / PDF</Text>
-                </TouchableOpacity>
-            )}
+            <View style={styles.uploadHeader}>
+                <MaterialCommunityIcons name="image-plus" size={40} color="#1A1A1A" />
+                <Text style={styles.uploadMainTitle}>Add Photos</Text>
+                <Text style={styles.uploadSubTitle}>Upload your photos and Horoscope to find your perfect match</Text>
+            </View>
 
-            <Text style={[styles.title, { marginTop: 30 }]}>Add profile photo</Text>
-            <View style={styles.profileUploadRow}>
-                {[0, 1].map((idx) => (
-                    <View key={idx} style={styles.uploadBoxHalfContainer}>
-                        {profileImages[idx] ? (
-                            <View style={styles.uploadBoxHalf}>
-                                <Image source={{ uri: profileImages[idx]! }} style={styles.uploadedHalfImage} />
-                                <TouchableOpacity style={styles.removeIconBadge} onPress={() => removeImage('profile', idx)}>
-                                    <Ionicons name="close-circle" size={24} color="#FF4444" />
-                                </TouchableOpacity>
-                            </View>
-                        ) : (
-                            <TouchableOpacity style={styles.uploadBoxHalf} onPress={() => pickImage('profile', idx)}>
-                                <View style={styles.plusBg}>
-                                    <Ionicons name="add" size={30} color="#000" />
-                                </View>
-                                <Text style={styles.miniUploadText}>Click to add photo</Text>
-                            </TouchableOpacity>
-                        )}
+            <View style={styles.horoscopeUploadSection}>
+                <Text style={styles.sectionTitle}>Horoscope</Text>
+                {horoscopeImage ? (
+                    <View style={styles.horoscopeCard}>
+                        <Image source={{ uri: horoscopeImage }} style={styles.horoscopeImagePreview} />
+                        <TouchableOpacity style={styles.removeCircle} onPress={() => removeImage('horoscope')}>
+                            <Ionicons name="close" size={20} color="#FFF" />
+                        </TouchableOpacity>
                     </View>
-                ))}
+                ) : (
+                    <TouchableOpacity style={styles.horoscopePlaceholder} onPress={() => pickImage('horoscope')}>
+                        <View style={styles.dashedBorder}>
+                            <MaterialCommunityIcons name="file-pdf-box" size={32} color={Colors.light.brandYellow} />
+                            <Text style={styles.placeholderText}>Upload Horoscope</Text>
+                            <Text style={styles.placeholderSubText}>Image or PDF (Max 5MB)</Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
+            </View>
+
+            <View style={styles.photoUploadSection}>
+                <View style={styles.sectionHeaderRow}>
+                    <Text style={styles.sectionTitle}>Profile Photos</Text>
+                    <Text style={styles.photoCountText}>{profileImages.filter(i => i).length}/2</Text>
+                </View>
+                <View style={styles.photosGrid}>
+                    {[0, 1].map((idx) => (
+                        <View key={idx} style={styles.photoCardContainer}>
+                            {profileImages[idx] ? (
+                                <View style={styles.photoCard}>
+                                    <Image source={{ uri: profileImages[idx]! }} style={styles.photoPreview} />
+                                    <TouchableOpacity style={styles.removeCircle} onPress={() => removeImage('profile', idx)}>
+                                        <Ionicons name="close" size={20} color="#FFF" />
+                                    </TouchableOpacity>
+                                </View>
+                            ) : (
+                                <TouchableOpacity style={styles.photoPlaceholder} onPress={() => pickImage('profile', idx)}>
+                                    <View style={styles.dashedBorderSmall}>
+                                        <Ionicons name="camera-outline" size={28} color="#999" />
+                                        <Text style={styles.miniPlaceholderText}>Add Photo</Text>
+                                    </View>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ))}
+                </View>
+            </View>
+
+            <View style={styles.uploadTips}>
+                <Ionicons name="information-circle-outline" size={20} color="#666" />
+                <Text style={styles.tipsText}>Profiles with photos get 10x more responses</Text>
             </View>
         </View>
     );
@@ -1154,5 +1193,152 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#1A1A1A',
         fontFamily: serifFont,
+    },
+    uploadHeader: {
+        alignItems: 'center',
+        width: '100%',
+        marginBottom: 30,
+    },
+    uploadMainTitle: {
+        fontSize: 28,
+        fontFamily: serifFont,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginTop: 10,
+    },
+    uploadSubTitle: {
+        fontSize: 14,
+        color: '#666',
+        textAlign: 'center',
+        marginTop: 5,
+        paddingHorizontal: 20,
+    },
+    horoscopeUploadSection: {
+        width: '100%',
+        marginBottom: 30,
+    },
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 15,
+        fontFamily: serifFont,
+    },
+    horoscopeCard: {
+        width: '100%',
+        height: 180,
+        borderRadius: 15,
+        overflow: 'hidden',
+        backgroundColor: '#F9F9F9',
+    },
+    horoscopeImagePreview: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    removeCircle: {
+        position: 'absolute',
+        top: 10,
+        right: 10,
+        backgroundColor: 'rgba(255, 68, 68, 0.9)',
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    horoscopePlaceholder: {
+        width: '100%',
+        height: 150,
+        borderRadius: 15,
+        backgroundColor: '#FFF8E1',
+    },
+    dashedBorder: {
+        flex: 1,
+        borderWidth: 2,
+        borderColor: Colors.light.brandYellow,
+        borderStyle: 'dashed',
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    placeholderText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginTop: 10,
+    },
+    placeholderSubText: {
+        fontSize: 12,
+        color: '#666',
+        marginTop: 5,
+    },
+    photoUploadSection: {
+        width: '100%',
+        marginBottom: 30,
+    },
+    sectionHeaderRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    photoCountText: {
+        fontSize: 14,
+        fontWeight: 'bold',
+        color: Colors.light.brandYellow,
+    },
+    photosGrid: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    photoCardContainer: {
+        width: '48%',
+    },
+    photoCard: {
+        width: '100%',
+        aspectRatio: 1,
+        borderRadius: 15,
+        overflow: 'hidden',
+    },
+    photoPreview: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+    },
+    photoPlaceholder: {
+        width: '100%',
+        aspectRatio: 1,
+        borderRadius: 15,
+        backgroundColor: '#F5F5F5',
+    },
+    dashedBorderSmall: {
+        flex: 1,
+        borderWidth: 1.5,
+        borderColor: '#E0E0E0',
+        borderStyle: 'dashed',
+        borderRadius: 15,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    miniPlaceholderText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#999',
+        marginTop: 8,
+    },
+    uploadTips: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#F0F7FF',
+        padding: 15,
+        borderRadius: 10,
+        width: '100%',
+        gap: 10,
+    },
+    tipsText: {
+        fontSize: 12,
+        color: '#444',
+        flex: 1,
     },
 });

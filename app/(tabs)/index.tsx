@@ -1,4 +1,5 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Dimensions,
@@ -14,11 +15,8 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { CompatibilityRing } from '../../components/ui/CompatibilityRing';
 
 const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.82;
-const CARD_SPACING = 15;
 
 const serifFont = Platform.select({
   ios: 'Georgia',
@@ -33,32 +31,22 @@ const DUMMY_TOP_MATCHES = [
     id: '1',
     name: 'Prisha Mirha',
     age: 28,
-    tags: ['📍 Chennai', '💼 Software Professional', '🎓 B.Tech', '🗣️ Tamil'],
+    profession: 'Software Professional',
+    degree: 'Graduate',
+    location: 'Dwaraka, New Delhi',
     imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-    compatibility: 85,
   },
   {
     id: '2',
     name: 'Aishwarya',
     age: 26,
-    tags: ['📍 Bangalore', '💼 UX Designer', '🎓 B.Des', '🗣️ Kannada'],
+    profession: 'UX Designer',
+    degree: 'B.Des',
+    location: 'Bangalore, India',
     imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-    compatibility: 60,
-  },
-  {
-    id: '3',
-    name: 'Diya Patel',
-    age: 27,
-    tags: ['📍 Mumbai', '💼 Architect', '🎓 M.Arch', '🗣️ Gujarati'],
-    imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-    compatibility: 45,
   },
 ];
 
-const DUMMY_PREFERENCES = [
-  { id: 'p1', name: 'Kavya', age: 25, title: 'Doctor', location: 'Kochin', imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop' },
-  { id: 'p2', name: 'Nisha', age: 29, title: 'Teacher', location: 'Pune', imageUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1000&auto=format&fit=crop' },
-];
 
 const DUMMY_RECENT = [
   {
@@ -110,74 +98,107 @@ const SUBSCRIPTION_PLANS = [
 ];
 
 export default function DiscoverScreen() {
+  const router = useRouter();
   const [activeFilter, setActiveFilter] = useState('New Matches');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [likedProfiles, setLikedProfiles] = useState<string[]>([]);
+
+  const handleToggleLike = (id: string, e?: any) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    setLikedProfiles(prev =>
+      prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+    );
+  };
 
   React.useEffect(() => {
     // Show premium modal every time the app/screen is opened
     setShowPremiumModal(true);
   }, []);
 
-  const renderTopMatch = ({ item, index }: { item: typeof DUMMY_TOP_MATCHES[0], index: number }) => (
-    <View style={[styles.topMatchCard, { marginLeft: index === 0 ? 20 : 0 }]}>
-      <View style={styles.topMatchImageContainer}>
+  const renderTopMatch = ({ item }: { item: typeof DUMMY_TOP_MATCHES[0] }) => (
+    <View style={styles.topMatchContainer}>
+      <TouchableOpacity
+        activeOpacity={0.9}
+        style={styles.topMatchCard}
+        onPress={() => router.push({
+          pathname: '/profile-detail',
+          params: { name: item.name, age: item.age.toString() }
+        })}
+      >
         <Image source={{ uri: item.imageUrl }} style={styles.topMatchImage} />
 
-        {/* Astrological Compatibility Ring */}
-        <CompatibilityRing percentage={item.compatibility} size={54} strokeWidth={5} />
-
-        {/* Heart button */}
-        <TouchableOpacity style={styles.heartBtn}>
-          <Ionicons name="heart" size={24} color="#FDBE01" />
+        {/* Heart icon overlay */}
+        <TouchableOpacity
+          style={styles.heartOverlay}
+          onPress={(e) => handleToggleLike(item.id, e)}
+        >
+          <Ionicons
+            name={likedProfiles.includes(item.id) ? "heart" : "heart-outline"}
+            size={24}
+            color="#FDBE01"
+          />
         </TouchableOpacity>
-      </View>
 
-      {/* Profile Details */}
-      <View style={styles.topMatchDetails}>
-        <Text style={styles.topMatchName}>{item.name}, {item.age}</Text>
-
-        <View style={styles.tagsContainer}>
-          {item.tags.map((tag, i) => (
-            <View key={i} style={styles.tagPill}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
+        {/* Info overlay */}
+        <View style={styles.topMatchInfoOverlay}>
+          <Text style={styles.overlayName}>{item.name}, {item.age}</Text>
+          <Text style={styles.overlayDetails}>{item.profession} - {item.degree}</Text>
+          <Text style={styles.overlayLocation}>{item.location}</Text>
         </View>
+      </TouchableOpacity>
 
-        {/* CTAs */}
-        <View style={styles.inlineCtaContainer}>
-          <TouchableOpacity style={styles.inlineCtaBtn}>
-            <Ionicons name="chatbubble-outline" size={18} color="#1A1A1A" />
-            <Text style={styles.inlineCtaText}>Chat</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.inlineCtaBtn, styles.inlineCtaBtnPrimary]}>
-            <MaterialCommunityIcons name="ring" size={18} color="#1A1A1A" />
-            <Text style={[styles.inlineCtaText, { color: '#1A1A1A' }]}>Interest</Text>
-          </TouchableOpacity>
-        </View>
+      {/* Action Buttons */}
+      <View style={styles.actionRow}>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => router.push({
+            pathname: '/chat-detail',
+            params: { name: item.name, imageUrl: item.imageUrl }
+          })}
+        >
+          <Ionicons name="chatbubble" size={20} color="#000" />
+          <Text style={styles.actionBtnText}>Chat</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.actionBtn}
+          onPress={() => router.push('/matches')}
+        >
+          <MaterialCommunityIcons name="ring" size={20} color="#000" />
+          <Text style={styles.actionBtnText}>Interest</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
+        {/* Header - Image 3 Style */}
         <View style={styles.header}>
-          <Image
-            source={{ uri: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1287&auto=format&fit=crop' }}
-            style={styles.profilePic}
-          />
+          <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?q=80&w=1287&auto=format&fit=crop' }}
+              style={styles.profilePic}
+            />
+          </TouchableOpacity>
+
           <View style={styles.searchContainer}>
             <Ionicons name="search-outline" size={20} color="#999" style={styles.searchIcon} />
             <TextInput
               style={styles.searchInput}
               placeholder="Search for your better half"
               placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
             />
           </View>
-          <TouchableOpacity style={styles.notificationBtn}>
-            <Ionicons name="notifications-outline" size={28} color="#1A1A1A" />
+
+          <TouchableOpacity
+            style={styles.notificationBtn}
+            onPress={() => router.push('/notifications')}
+          >
+            <Ionicons name="notifications-outline" size={26} color="#000" />
             <View style={styles.badge} />
           </TouchableOpacity>
         </View>
@@ -199,20 +220,24 @@ export default function DiscoverScreen() {
           </ScrollView>
         </View>
 
-        {/* Inline Premium Banner */}
-        <View style={styles.inlineBanner}>
-          <MaterialCommunityIcons name="crown" size={24} color="#FDBE01" style={{ marginRight: 10 }} />
-          <Text style={styles.inlineBannerText}>Upgrade to Premium for exclusive benefits.</Text>
-          <TouchableOpacity style={styles.inlineBannerBtn}>
-            <Text style={styles.inlineBannerBtnText}>Upgrade</Text>
+        {/* Upgrade/Present Section - BEFORE Top Matches */}
+        <View style={styles.upgradeSection}>
+          <TouchableOpacity
+            style={styles.upgradeBtn}
+            onPress={() => router.push('/premium')}
+          >
+            <MaterialCommunityIcons name="crown" size={24} color="#000" />
+            <Text style={styles.upgradeBtnText}>Upgrade Now</Text>
           </TouchableOpacity>
         </View>
 
         {/* Top Matches Section */}
-        <View style={styles.sectionHeaderTopMatches}>
+        <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Top Matches</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllTextMinimal}>More</Text>
+          <TouchableOpacity onPress={() => router.push('/all-matches')}>
+            <View style={styles.seeAllBtn}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -222,47 +247,42 @@ export default function DiscoverScreen() {
           keyExtractor={(item) => item.id}
           horizontal
           showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH + CARD_SPACING}
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingRight: 20, paddingBottom: 20 }}
-          ItemSeparatorComponent={() => <View style={{ width: CARD_SPACING }} />}
+          contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
+          ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
         />
 
-        {/* Preferences Section - NEW */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Based on Preferences</Text>
-          <TouchableOpacity>
-            <Text style={styles.seeAllTextMinimal}>More</Text>
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-          {DUMMY_PREFERENCES.map((item, index) => (
-            <TouchableOpacity key={item.id} style={[styles.prefCard, index > 0 && { marginLeft: 15 }]}>
-              <Image source={{ uri: item.imageUrl }} style={styles.prefImage} />
-              <View style={styles.prefGradient}>
-                <Text style={styles.prefName}>{item.name}, {item.age}</Text>
-                <Text style={styles.prefDetails}>{item.title} • {item.location}</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
 
         {/* Recently Viewed Section */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recently Viewed</Text>
+          <TouchableOpacity onPress={() => router.push('/recently-viewed')}>
+            <View style={styles.seeAllBtn}>
+              <Text style={styles.seeAllText}>See All</Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20 }}>
-          {DUMMY_RECENT.map((item, index) => (
-            <View key={item.id} style={[styles.recentCard, index > 0 && { marginLeft: 15 }]}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.recentScroll}
+        >
+          {DUMMY_RECENT.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.recentCard}
+              onPress={() => router.push({
+                pathname: '/profile-detail',
+                params: { name: item.name, age: item.age.toString() }
+              })}
+            >
               <Image source={{ uri: item.imageUrl }} style={styles.recentImage} />
               <View style={styles.recentInfo}>
                 <Text style={styles.recentName}>{item.name}, {item.age}</Text>
                 <Text style={styles.recentDetails} numberOfLines={1}>{item.profession}</Text>
                 <Text style={styles.recentLocation}>{item.location}</Text>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
 
@@ -296,10 +316,13 @@ export default function DiscoverScreen() {
                 ))}
               </View>
 
-              <TouchableOpacity style={[
-                styles.subBtn,
-                plan.textColor === '#FFFFFF' ? { backgroundColor: '#FDBE01' } : { backgroundColor: '#1A1A1A' }
-              ]}>
+              <TouchableOpacity
+                style={[
+                  styles.subBtn,
+                  plan.textColor === '#FFFFFF' ? { backgroundColor: '#FDBE01' } : { backgroundColor: '#1A1A1A' }
+                ]}
+                onPress={() => router.push('/premium')}
+              >
                 <Text style={[
                   styles.subBtnText,
                   plan.textColor === '#FFFFFF' ? { color: '#1A1A1A' } : { color: '#FFFFFF' }
@@ -353,7 +376,7 @@ export default function DiscoverScreen() {
               style={styles.modalCtaBtn}
               onPress={() => {
                 setShowPremiumModal(false);
-                // navigate to premium screen if needed
+                router.push('/premium');
               }}
             >
               <Text style={styles.modalCtaText}>Subscribe Now!</Text>
@@ -371,32 +394,37 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
   },
   scrollContent: {
-    paddingBottom: 40,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-    marginTop: 10,
+    paddingVertical: 15,
   },
   profilePic: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    borderWidth: 2,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1.5,
     borderColor: '#FDBE01',
   },
   searchContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F7F7F7',
+    backgroundColor: '#FFFFFF',
     borderRadius: 25,
-    height: 46,
+    height: 44,
     marginHorizontal: 12,
     paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
   searchIcon: {
     marginRight: 8,
@@ -404,17 +432,17 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     fontFamily: serifFont,
-    fontSize: 15,
-    color: '#1A1A1A',
+    fontSize: 14,
+    color: '#000',
   },
   notificationBtn: {
     position: 'relative',
-    padding: 4,
+    padding: 5,
   },
   badge: {
     position: 'absolute',
-    top: 4,
-    right: 4,
+    top: 5,
+    right: 5,
     width: 10,
     height: 10,
     borderRadius: 5,
@@ -423,7 +451,7 @@ const styles = StyleSheet.create({
     borderColor: '#FFFFFF',
   },
   filterContainer: {
-    marginBottom: 20,
+    marginBottom: 10,
   },
   filterScroll: {
     paddingHorizontal: 20,
@@ -449,189 +477,164 @@ const styles = StyleSheet.create({
   filterChipTextActive: {
     color: '#FFFFFF',
   },
+  upgradeSection: {
+    paddingHorizontal: 20,
+    marginVertical: 10,
+    alignItems: 'flex-end',
+  },
+  upgradeBtn: {
+    backgroundColor: '#FDBE01',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  upgradeBtnText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginLeft: 8,
+    color: '#000',
+  },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginTop: 25,
-    marginBottom: 15,
-  },
-  sectionHeaderTopMatches: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    marginTop: 15,
+    marginTop: 20,
     marginBottom: 15,
   },
   sectionTitle: {
     fontSize: 24,
     fontFamily: serifFont,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000',
   },
-  seeAllTextMinimal: {
+  seeAllBtn: {
+    backgroundColor: '#FDBE01',
+    paddingHorizontal: 15,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  seeAllText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#FDBE01',
+    color: '#000',
+  },
+  topMatchContainer: {
+    width: width * 0.85,
   },
   topMatchCard: {
-    width: CARD_WIDTH,
-    height: 470,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 24,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 5,
-    marginBottom: 5,
-  },
-  topMatchImageContainer: {
     width: '100%',
-    height: 260,
-    borderRadius: 16,
+    height: 480,
+    borderRadius: 25,
     overflow: 'hidden',
     position: 'relative',
-    marginBottom: 16,
+    backgroundColor: '#F5F5F5',
   },
   topMatchImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
-  heartBtn: {
+  heartOverlay: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: 15,
+    right: 15,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  topMatchDetails: {
-    flex: 1,
+  topMatchInfoOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    paddingTop: 40,
+    backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  topMatchName: {
+  overlayName: {
     fontSize: 24,
     fontFamily: serifFont,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: '#FFFFFF',
+    marginBottom: 5,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
+  overlayDetails: {
+    fontSize: 14,
+    color: '#FFFFFF',
+    opacity: 0.9,
+    marginBottom: 3,
   },
-  tagPill: {
-    backgroundColor: '#F5F5F5',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#EEEEEE',
-  },
-  tagText: {
-    color: '#4A4A4A',
-    fontSize: 12,
+  overlayLocation: {
+    fontSize: 14,
+    color: '#FFFFFF',
     fontWeight: '600',
   },
-  inlineCtaContainer: {
+  actionRow: {
     flexDirection: 'row',
-    gap: 12,
-    marginTop: 'auto',
+    marginTop: 15,
+    gap: 15,
   },
-  inlineCtaBtn: {
+  actionBtn: {
     flex: 1,
+    height: 50,
+    backgroundColor: '#FDBE01',
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 24,
-    backgroundColor: '#F5F5F5',
   },
-  inlineCtaBtnPrimary: {
-    backgroundColor: '#FDBE01',
-  },
-  inlineCtaText: {
-    color: '#1A1A1A',
+  actionBtnText: {
+    fontSize: 16,
     fontWeight: 'bold',
-    fontSize: 14,
-    marginLeft: 6,
+    color: '#000',
+    marginLeft: 8,
   },
-  prefCard: {
-    width: 140,
-    height: 180,
-    borderRadius: 16,
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  prefImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  prefGradient: {
-    position: 'absolute',
-    bottom: 0, left: 0, right: 0,
-    padding: 10,
-    paddingTop: 30,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-  },
-  prefName: {
-    color: '#fff',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  prefDetails: {
-    color: '#ddd',
-    fontSize: 11,
-    marginTop: 2,
+
+  recentScroll: {
+    paddingHorizontal: 20,
+    paddingBottom: 20,
   },
   recentCard: {
     flexDirection: 'row',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 16,
-    padding: 10,
-    width: 260,
+    backgroundColor: '#FFF8E1',
+    borderRadius: 20,
+    padding: 12,
+    width: width * 0.65,
     alignItems: 'center',
+    marginRight: 15,
   },
   recentImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 15,
   },
   recentInfo: {
     flex: 1,
     marginLeft: 12,
-    justifyContent: 'center',
   },
   recentName: {
-    fontSize: 15,
+    fontSize: 16,
+    fontFamily: serifFont,
     fontWeight: 'bold',
-    color: '#1A1A1A',
+    color: '#000',
     marginBottom: 2,
   },
   recentDetails: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#666',
+    fontWeight: '600',
     marginBottom: 2,
   },
   recentLocation: {
-    fontSize: 12,
-    fontWeight: '600',
+    fontSize: 11,
     color: '#888',
+    fontWeight: '600',
   },
   subCard: {
     width: 250,
@@ -692,11 +695,11 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   motivationCard: {
-    backgroundColor: '#FFF0F5', // Light pinkish background
+    backgroundColor: '#FFF0F5',
     borderRadius: 20,
     padding: 20,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#FCE4EC',
   },
@@ -708,11 +711,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 15,
-    shadowColor: '#E91E63',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
   },
   motivationTextContainer: {
     flex: 1,
@@ -721,107 +719,69 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#E91E63',
-    marginBottom: 6,
+    marginBottom: 4,
     fontFamily: serifFont,
   },
   motivationText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#4A4A4A',
-    lineHeight: 22,
     fontStyle: 'italic',
-  },
-  inlineBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#1A1A1A',
-    marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 16,
-  },
-  inlineBannerText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '400',
-    flex: 1,
-    marginRight: 10,
-    lineHeight: 20,
-  },
-  inlineBannerBtn: {
-    backgroundColor: '#FDBE01',
-    paddingHorizontal: 18,
-    paddingVertical: 10,
-    borderRadius: 20,
-  },
-  inlineBannerBtnText: {
-    color: '#1A1A1A',
-    fontWeight: '600',
-    fontSize: 14,
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 30,
+    padding: 20,
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 24,
+    borderRadius: 30,
+    padding: 30,
     width: '100%',
-    padding: 24,
     alignItems: 'center',
     position: 'relative',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 10,
   },
   modalCloseBtn: {
     position: 'absolute',
-    top: 15,
-    right: 15,
+    top: 20,
+    right: 20,
     padding: 5,
   },
   modalIconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: 'rgba(253, 190, 1, 0.1)',
+    backgroundColor: '#FFF8E1',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop: 10,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 22,
     fontFamily: serifFont,
     fontWeight: 'bold',
-    color: '#1A1A1A',
-    marginBottom: 10,
     textAlign: 'center',
+    marginBottom: 10,
   },
   modalSubtext: {
-    fontSize: 15,
-    color: '#666666',
+    fontSize: 14,
+    color: '#666',
     textAlign: 'center',
-    marginBottom: 30,
-    lineHeight: 22,
+    lineHeight: 20,
+    marginBottom: 25,
   },
   modalCtaBtn: {
     backgroundColor: '#FDBE01',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 30,
     width: '100%',
-    paddingVertical: 16,
-    borderRadius: 12,
     alignItems: 'center',
   },
   modalCtaText: {
-    color: '#1A1A1A',
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#1A1A1A',
   },
 });
