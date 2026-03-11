@@ -110,34 +110,33 @@ export default function FavouritesScreen() {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                    <Ionicons name="chevron-back" size={30} color="#FDBE01" />
+                    <Ionicons name="chevron-back" size={28} color="#FDBE01" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Favourites</Text>
-                <View style={{ width: 40 }} />
             </View>
 
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
                     onPress={() => setActiveTab('liked you')}
-                    style={styles.tabItem}
+                    style={[styles.tabItem, activeTab === 'liked you' && styles.tabItemActive]}
                 >
                     <Text style={[
                         styles.tabText,
                         activeTab === 'liked you' ? styles.tabTextActive : styles.tabTextInactive
                     ]}>
-                        liked you
+                        Liked You
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     onPress={() => setActiveTab('your like')}
-                    style={styles.tabItem}
+                    style={[styles.tabItem, activeTab === 'your like' && styles.tabItemActive]}
                 >
                     <Text style={[
-                        styles.tabTextHeader,
-                        activeTab === 'your like' ? styles.tabTextActiveHeader : styles.tabTextInactiveHeader
+                        styles.tabText,
+                        activeTab === 'your like' ? styles.tabTextActive : styles.tabTextInactive
                     ]}>
-                        your like
+                        Your Likes
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -161,50 +160,48 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         paddingHorizontal: 15,
-        paddingVertical: 20,
+        paddingVertical: 15,
+        position: 'relative',
     },
     backButton: {
+        position: 'absolute',
+        left: 15,
         padding: 5,
+        zIndex: 1,
     },
     headerTitle: {
-        fontSize: 32,
+        fontSize: 28,
         fontFamily: serifFont,
         fontWeight: '700',
         color: '#1A1A1A',
-        textAlign: 'center',
     },
     tabContainer: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
-        paddingHorizontal: 30,
-        marginBottom: 30,
-        marginTop: 10,
+        marginBottom: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: '#EEEEEE',
     },
     tabItem: {
-        paddingVertical: 5,
+        flex: 1,
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderBottomWidth: 2,
+        borderBottomColor: 'transparent',
+    },
+    tabItemActive: {
+        borderBottomColor: '#FDBE01',
     },
     tabText: {
-        fontSize: 24,
-        fontWeight: '700',
+        fontSize: 16,
+        fontWeight: '600',
     },
     tabTextActive: {
         color: '#FDBE01',
     },
     tabTextInactive: {
-        color: '#000000',
-    },
-    tabTextHeader: {
-        fontSize: 24,
-        fontFamily: serifFont,
-        fontWeight: '700',
-    },
-    tabTextActiveHeader: {
-        color: '#FDBE01',
-    },
-    tabTextInactiveHeader: {
-        color: '#000000',
+        color: '#999999',
     },
     listContent: {
         paddingHorizontal: 20,
@@ -212,13 +209,21 @@ const styles = StyleSheet.create({
     },
     card: {
         flexDirection: 'row',
-        marginBottom: 35,
+        marginBottom: 20,
         alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 15,
+        padding: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 5,
+        elevation: 2,
     },
     imageContainer: {
-        width: 170,
+        width: 100,
         height: 100,
-        borderRadius: 15,
+        borderRadius: 12,
         borderWidth: 2,
         borderColor: '#FDBE01',
         overflow: 'hidden',
@@ -230,45 +235,46 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         flex: 1,
-        marginLeft: 20,
+        marginLeft: 15,
     },
     nameText: {
         fontSize: 16,
         fontFamily: serifFont,
         fontWeight: '700',
-        color: '#000000',
-        marginBottom: 4,
+        color: '#1A1A1A',
+        marginBottom: 2,
     },
     statsRow: {
         flexDirection: 'row',
-        marginBottom: 4,
+        marginBottom: 2,
+        flexWrap: 'wrap',
     },
     statsText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#000000',
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#666666',
     },
     professionText: {
-        fontSize: 14,
-        fontWeight: '700',
-        color: '#000000',
+        fontSize: 13,
+        fontWeight: '500',
+        color: '#666666',
         marginBottom: 10,
     },
     buttonRow: {
         flexDirection: 'row',
-        gap: 20,
+        gap: 10,
+        flexWrap: 'wrap',
     },
     profileBtn: {
         backgroundColor: '#FDBE01',
-        paddingHorizontal: 20,
+        paddingHorizontal: 15,
         paddingVertical: 6,
         borderRadius: 20,
-        minWidth: 70,
         alignItems: 'center',
     },
     profileBtnText: {
-        color: '#000000',
-        fontSize: 14,
+        color: '#1A1A1A',
+        fontSize: 13,
         fontWeight: '700',
     },
     messageBtn: {
@@ -277,13 +283,12 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         borderRadius: 20,
         borderWidth: 1,
-        borderColor: '#000000',
-        minWidth: 70,
+        borderColor: '#E0E0E0',
         alignItems: 'center',
     },
     messageBtnText: {
-        color: '#000000',
-        fontSize: 14,
+        color: '#1A1A1A',
+        fontSize: 13,
         fontWeight: '700',
     },
 });

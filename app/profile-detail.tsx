@@ -46,7 +46,7 @@ export default function ProfileDetailScreen() {
     };
 
     return (
-        <SafeAreaView style={styles.container} edges={['bottom']}>
+        <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
 
                 {/* Image Header Section */}
