@@ -69,6 +69,7 @@ export default function CreateProfileScreen() {
     const [income, setIncome] = useState('');
     const [worksWith, setWorksWith] = useState('');
     const [worksAs, setWorksAs] = useState('');
+    const [casteNoBar, setCasteNoBar] = useState(false);
 
     // Image State
     const [horoscopeImage, setHoroscopeImage] = useState<string | null>(null);
@@ -458,10 +459,16 @@ export default function CreateProfileScreen() {
                 <Ionicons name="caret-down" size={20} color="#1A1A1A" />
             </TouchableOpacity>
 
-            <View style={styles.checkboxRow}>
-                <View style={styles.checkbox} />
-                <Text style={styles.checkboxLabel}>Not particular about my partner's community (Caste no bar)</Text>
-            </View>
+            <TouchableOpacity 
+                style={styles.checkboxRow} 
+                onPress={() => setCasteNoBar(!casteNoBar)}
+                activeOpacity={0.7}
+            >
+                <View style={[styles.checkbox, casteNoBar && styles.checkboxSelected]}>
+                    {casteNoBar && <Ionicons name="checkmark" size={14} color="#FFF" />}
+                </View>
+                <Text style={styles.checkboxLabel}>Not particular about my partner's community (Caste no bar) *</Text>
+            </TouchableOpacity>
         </View>
     );
 
@@ -695,7 +702,14 @@ export default function CreateProfileScreen() {
     const isButtonEnabled = () => {
         if (step === 'profile_for') return !!profileFor;
         if (step === 'gender') return !!gender;
-        if (step === 'basic_details') return firstName && lastName && dob !== null;
+        if (step === 'basic_details') return !!(firstName && lastName && dob);
+        if (step === 'preferences') return !!(religion && community && livingIn);
+        if (step === 'location') return !!(state && city && casteNoBar);
+        if (step === 'physical_info') return !!(maritalStatus && height && weight);
+        if (step === 'qualification') return !!qualification;
+        if (step === 'horoscope') return !!(zodiac && star && dosham);
+        if (step === 'work') return !!(income && worksWith && worksAs);
+        if (step === 'uploads') return profileImages.some(img => img !== null);
         return true;
     };
 
@@ -1082,12 +1096,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 5,
     },
     checkbox: {
-        width: 20,
-        height: 20,
-        borderWidth: 1.5,
+        width: 22,
+        height: 22,
+        borderWidth: 2,
         borderColor: Colors.light.brandYellow,
-        borderRadius: 4,
-        marginRight: 10,
+        borderRadius: 6,
+        marginRight: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    checkboxSelected: {
+        backgroundColor: Colors.light.brandYellow,
     },
     checkboxLabel: {
         fontSize: 13,
