@@ -409,6 +409,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     footer: {
         flexDirection: 'row',
