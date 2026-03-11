@@ -4,6 +4,39 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 profile_bp = Blueprint('profile', __name__)
 
+@profile_bp.route('/<int:user_id>', methods=['GET'])
+@jwt_required()
+def get_user_profile(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+        
+    import datetime
+    age = None
+    if user.dob:
+        today = datetime.date.today()
+        age = today.year - user.dob.year - ((today.month, today.day) < (user.dob.month, user.dob.day))
+        
+    data = {
+        "id": user.id,
+        "full_name": user.full_name,
+        "age": age,
+        "bio": user.bio,
+        "dob": str(user.dob) if user.dob else None,
+        "location": user.location,
+        "details": {
+            "height": user.details.height if user.details else None,
+            "religion": user.details.religion if user.details else None,
+            "caste": user.details.caste if user.details else None,
+            "education": user.details.education if user.details else None,
+            "profession": user.details.profession if user.details else None,
+            "siblings": None # Add to DB later if needed
+        },
+        "photos": [{"id": p.id, "url": p.photo_url, "is_primary": p.is_primary} for p in user.photos]
+    }
+    return jsonify(data), 200
+
+
 @profile_bp.route('/me', methods=['GET'])
 @jwt_required()
 def get_my_profile():

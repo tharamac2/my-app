@@ -1,7 +1,8 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Alert,
     Dimensions,
     Image,
@@ -13,6 +14,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -25,25 +27,52 @@ const serifFont = Platform.select({
 export default function ProfileDetailScreen() {
     const router = useRouter();
     const params = useLocalSearchParams();
+    const [profile, setProfile] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
 
-    // Use params or fallback to the provided persona (Prisha Mirha)
-    const profile = {
-        name: params.name || 'Prisha Mirha',
-        age: params.age || '28',
-        bio: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-        dob: '02-05-1995',
-        birthTime: '04.15 AM',
-        religion: 'Hindu',
-        height: '168 cm',
-        siblings: '3',
-        location: 'Mumbai, India',
-        mainImage: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-        gallery: [
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-            'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop'
-        ]
-    };
+    useEffect(() => {
+        const fetchProfile = async () => {
+            if (!params.id) {
+                setLoading(false);
+                return;
+            }
+            try {
+                const response = await api.get(`/profile/${params.id}`);
+                setProfile(response.data);
+            } catch (error) {
+                console.error("Failed to load profile", error);
+                Alert.alert("Error", "Could not load profile details");
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProfile();
+    }, [params.id]);
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color="#FDBE01" />
+            </SafeAreaView>
+        );
+    }
+
+    if (!profile) {
+        return (
+            <SafeAreaView style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+                <Text style={{ fontFamily: serifFont, fontSize: 18 }}>Profile not found.</Text>
+                <TouchableOpacity onPress={() => router.back()} style={{ marginTop: 20 }}>
+                    <Text style={{ color: '#FDBE01', fontWeight: 'bold' }}>Go Back</Text>
+                </TouchableOpacity>
+            </SafeAreaView>
+        );
+    }
+
+    const mainImage = profile.photos?.find((p: any) => p.is_primary)?.url 
+        || (profile.photos && profile.photos.length > 0 ? profile.photos[0].url : 'https://via.placeholder.com/400');
+    
+    // Fallback info if empty
+    const bioText = profile.bio || "This user hasn't added a bio yet.";
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -52,7 +81,7 @@ export default function ProfileDetailScreen() {
                 {/* Image Header Section */}
                 <View style={styles.imageSection}>
                     <View style={styles.mainImageContainer}>
-                        <Image source={{ uri: profile.mainImage }} style={styles.mainImage} />
+                        <Image source={{ uri: mainImage }} style={styles.mainImage} />
 
                         {/* Overlay Buttons */}
                         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
@@ -65,33 +94,29 @@ export default function ProfileDetailScreen() {
 
                         {/* Gallery Thumbnails */}
                         <View style={styles.galleryOverlay}>
-                            {profile.gallery.map((img, index) => (
-                                <View key={index} style={styles.thumbnailContainer}>
-                                    <Image source={{ uri: img }} style={styles.thumbnail} />
+                            {profile.photos?.slice(0, 3).map((img: any) => (
+                                <View key={img.id} style={styles.thumbnailContainer}>
+                                    <Image source={{ uri: img.url }} style={styles.thumbnail} />
                                 </View>
                             ))}
                         </View>
 
-                        {/* Perfect Match Badge */}
-                        <View style={styles.badgeContainer}>
-                            <View style={styles.badgeContent}>
-                                <MaterialCommunityIcons name="heart-multiple" size={20} color="#FDBE01" />
-                                <Text style={styles.badgeText}>Perfect for eachother !</Text>
-                            </View>
-                        </View>
+                        {/* Compatibility Badge (mock logic for now if >70%)*/ }
+                        {/* Perfect Match Badge logic can go here if provided in API */}
+                        
                     </View>
                 </View>
 
                 {/* Profile Info */}
                 <View style={styles.infoSection}>
                     <View style={styles.titleRow}>
-                        <Text style={styles.nameText}>{profile.name}, {profile.age}</Text>
+                        <Text style={styles.nameText}>{profile.full_name}, {profile.age || '-'}</Text>
                         <TouchableOpacity onPress={() => Alert.alert('Photos', 'Viewing all photos... ')}>
                             <Text style={styles.seeAllText}>see all</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <Text style={styles.bioText}>{profile.bio}</Text>
+                    <Text style={styles.bioText}>{bioText}</Text>
 
                     {/* Horizontal detail cards */}
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.cardsScroll}>
@@ -101,38 +126,38 @@ export default function ProfileDetailScreen() {
                             <View style={styles.gridRow}>
                                 <View style={styles.gridItem}>
                                     <Text style={styles.label}>Date Of Birth</Text>
-                                    <Text style={styles.value}>{profile.dob}</Text>
+                                    <Text style={styles.value}>{profile.dob || 'Not specified'}</Text>
                                 </View>
                                 <View style={styles.gridItem}>
-                                    <Text style={styles.label}>Birth Time</Text>
-                                    <Text style={styles.value}>{profile.birthTime}</Text>
+                                    <Text style={styles.label}>Profession</Text>
+                                    <Text style={styles.value}>{profile.details?.profession || 'Not specified'}</Text>
                                 </View>
                             </View>
                             <View style={[styles.gridRow, { marginTop: 15 }]}>
                                 <View style={styles.gridItem}>
                                     <Text style={styles.label}>Religion</Text>
-                                    <Text style={styles.value}>{profile.religion}</Text>
+                                    <Text style={styles.value}>{profile.details?.religion || 'Not specified'}</Text>
                                 </View>
                                 <View style={styles.gridItem}>
                                     <Text style={styles.label}>Height</Text>
-                                    <Text style={styles.value}>{profile.height}</Text>
+                                    <Text style={styles.value}>{profile.details?.height ? `${profile.details.height} cm` : 'Not specified'}</Text>
                                 </View>
                             </View>
                         </View>
 
                         {/* Family Details */}
                         <View style={styles.detailCard}>
-                            <Text style={styles.cardHeader}>Family details</Text>
+                            <Text style={styles.cardHeader}>Family/Other details</Text>
                             <View style={styles.gridRow}>
                                 <View style={styles.gridItem}>
-                                    <Text style={styles.label}>No.of Siblings</Text>
-                                    <Text style={styles.value}>{profile.siblings}</Text>
+                                    <Text style={styles.label}>Education</Text>
+                                    <Text style={styles.value}>{profile.details?.education || 'Not specified'}</Text>
                                 </View>
                             </View>
                             <View style={[styles.gridRow, { marginTop: 15 }]}>
                                 <View style={styles.gridItem}>
                                     <Text style={styles.label}>Location</Text>
-                                    <Text style={styles.value}>{profile.location}</Text>
+                                    <Text style={styles.value}>{profile.location || 'Not specified'}</Text>
                                 </View>
                             </View>
                         </View>
@@ -150,7 +175,7 @@ export default function ProfileDetailScreen() {
                         style={styles.chatActionBtn}
                         onPress={() => router.push({
                             pathname: '/chat-detail',
-                            params: { name: profile.name, imageUrl: profile.mainImage }
+                            params: { name: profile.full_name, imageUrl: mainImage }
                         })}
                     >
                         <Ionicons name="chatbubble" size={28} color="#000000" />

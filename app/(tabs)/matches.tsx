@@ -80,7 +80,7 @@ export default function FavouritesScreen() {
                         style={styles.profileBtn}
                         onPress={() => router.push({
                             pathname: '/profile-detail',
-                            params: { name: item.full_name }
+                            params: { id: item.partner_id.toString() }
                         })}
                     >
                         <Text style={styles.profileBtnText}>profile</Text>

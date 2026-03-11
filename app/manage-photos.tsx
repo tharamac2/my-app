@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React from 'react';
+import api from '../services/api';
 import {
     Alert,
     Dimensions,
@@ -22,11 +23,21 @@ const itemSize = (width - padding * 2 - gap * 2) / 3;
 export default function ManagePhotosScreen() {
     const router = useRouter();
 
-    const [photos, setPhotos] = React.useState([
-        { id: '1', uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop', isPrimary: true },
-        { id: '2', uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop', isPrimary: false },
-        { id: '3', uri: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop', isPrimary: false },
-    ]);
+    const [photos, setPhotos] = React.useState<any[]>([]);
+
+    React.useEffect(() => {
+        api.get('/profile/me')
+            .then((res: any) => {
+                if (res.data.photos) {
+                    setPhotos(res.data.photos.map((p: any) => ({
+                        id: p.id.toString(),
+                        uri: p.url,
+                        isPrimary: p.is_primary
+                    })));
+                }
+            })
+            .catch((err: any) => console.error("Failed to fetch photos", err));
+    }, []);
 
     const pickImage = async (replaceId?: string) => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
