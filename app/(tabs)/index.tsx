@@ -220,14 +220,21 @@ export default function DiscoverScreen() {
           </ScrollView>
         </View>
 
-        {/* Upgrade/Present Section - BEFORE Top Matches */}
+        {/* Upgrade / Premium Banner */}
         <View style={styles.upgradeSection}>
           <TouchableOpacity
             style={styles.upgradeBtn}
             onPress={() => router.push('/premium')}
+            activeOpacity={0.8}
           >
-            <MaterialCommunityIcons name="crown" size={24} color="#000" />
-            <Text style={styles.upgradeBtnText}>Upgrade Now</Text>
+            <View style={styles.upgradeIconBg}>
+              <MaterialCommunityIcons name="crown" size={26} color="#FDBE01" />
+            </View>
+            <View style={styles.upgradeTextContainer}>
+              <Text style={styles.upgradeBtnTextMain}>Unlock Premium Matches</Text>
+              <Text style={styles.upgradeBtnTextSub}>Get 3x more visibility</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color="#FDBE01" />
           </TouchableOpacity>
         </View>
 
@@ -479,22 +486,40 @@ const styles = StyleSheet.create({
   },
   upgradeSection: {
     paddingHorizontal: 20,
-    marginVertical: 10,
-    alignItems: 'flex-end',
+    marginVertical: 15,
   },
   upgradeBtn: {
-    backgroundColor: '#FDBE01',
+    backgroundColor: '#1A1A1A',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 15,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: 15,
+    borderRadius: 16,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
-  upgradeBtnText: {
-    fontSize: 14,
+  upgradeIconBg: {
+    backgroundColor: '#333333',
+    padding: 10,
+    borderRadius: 12,
+    marginRight: 15,
+  },
+  upgradeTextContainer: {
+    flex: 1,
+  },
+  upgradeBtnTextMain: {
+    fontSize: 16,
     fontWeight: 'bold',
-    marginLeft: 8,
-    color: '#000',
+    color: '#FDBE01',
+    marginBottom: 4,
+  },
+  upgradeBtnTextSub: {
+    fontSize: 13,
+    color: '#CCCCCC',
   },
   sectionHeader: {
     flexDirection: 'row',

@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -200,10 +201,11 @@ export default function ForgotPasswordScreen() {
     );
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 bounces={false}
@@ -214,8 +216,8 @@ export default function ForgotPasswordScreen() {
                 {step === 'verify' && renderStepVerify()}
                 {step === 'new_password' && renderStepNewPassword()}
             </ScrollView>
-            <View style={styles.homeIndicator} />
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
@@ -383,15 +385,6 @@ const styles = StyleSheet.create({
         fontFamily: serifFont,
         fontWeight: 'bold',
         color: '#1A1A1A',
-    },
-    homeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 140,
-        height: 5,
-        backgroundColor: '#1A1A1A',
-        borderRadius: 10,
-        alignSelf: 'center',
     },
     errorText: {
         color: '#EF4444',

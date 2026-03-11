@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const { width } = Dimensions.get('window');
 
@@ -250,10 +251,11 @@ export default function LoginScreen() {
     );
 
     return (
-        <KeyboardAvoidingView
-            style={styles.container}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#FFFFFF' }}>
+            <KeyboardAvoidingView
+                style={styles.container}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            >
             <ScrollView
                 contentContainerStyle={styles.scrollContent}
                 bounces={false}
@@ -264,8 +266,8 @@ export default function LoginScreen() {
                 {step === 'mobile' && renderMobileLogin()}
                 {step === 'otp' && renderOtpVerification()}
             </ScrollView>
-            <View style={styles.homeIndicator} />
-        </KeyboardAvoidingView>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
     );
 }
 
@@ -313,7 +315,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.light.brandYellow,
         borderTopLeftRadius: 60,
         borderTopRightRadius: 60,
-        paddingHorizontal: 30,
+        paddingHorizontal: 20,
         paddingTop: 50,
         minHeight: 500,
     },
@@ -390,15 +392,19 @@ const styles = StyleSheet.create({
     },
     primaryButton: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 30,
-        height: 60,
+        borderRadius: 12,
+        height: 52,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 30,
+        elevation: 2,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
     },
     primaryButtonText: {
-        fontSize: 28,
-        fontFamily: serifFont,
+        fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
     },
@@ -455,15 +461,6 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         color: '#1A1A1A',
-    },
-    homeIndicator: {
-        position: 'absolute',
-        bottom: 8,
-        width: 140,
-        height: 5,
-        backgroundColor: '#1A1A1A',
-        borderRadius: 10,
-        alignSelf: 'center',
     },
     errorText: {
         color: '#EF4444',
