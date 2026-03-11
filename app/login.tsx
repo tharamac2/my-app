@@ -375,6 +375,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     linksRow: {
         flexDirection: 'row',
@@ -387,6 +388,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     primaryButton: {
         backgroundColor: '#FFFFFF',
@@ -414,6 +416,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     signupButtonSmall: {
         backgroundColor: '#FFFFFF',

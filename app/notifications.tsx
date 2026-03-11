@@ -313,6 +313,7 @@ const styles = StyleSheet.create({
         fontSize: 12,
         color: '#666',
         marginTop: 10,
+        fontFamily: serifFont,
     },
     emptyContainer: {
         flex: 1,

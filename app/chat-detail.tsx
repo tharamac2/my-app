@@ -260,9 +260,11 @@ const styles = StyleSheet.create({
     },
     otherMessageText: {
         color: '#000000',
+        fontFamily: serifFont,
     },
     myMessageText: {
         color: '#000000',
+        fontFamily: serifFont,
     },
     timeContainer: {
         flexDirection: 'row',

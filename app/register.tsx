@@ -466,6 +466,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#888',
+        fontFamily: serifFont,
     },
     footerRow: {
         flexDirection: 'row',
@@ -479,6 +480,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     actionButtonSmall: {
         backgroundColor: '#FFFFFF',
@@ -619,6 +621,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#1A1A1A',
+        fontFamily: serifFont,
     },
     errorText: {
         color: '#EF4444',
