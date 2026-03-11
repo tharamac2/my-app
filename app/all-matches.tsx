@@ -114,7 +114,7 @@ export default function AllMatchesScreen() {
                     <Ionicons name="heart-outline" size={24} color="#000" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/premium')}>
-                    <Ionicons name="crown-outline" size={24} color="#000" />
+                    <MaterialCommunityIcons name="crown-outline" size={24} color="#000" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
                     <Ionicons name="person-outline" size={24} color="#000" />
@@ -195,11 +195,13 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         opacity: 0.9,
         marginBottom: 2,
+        fontFamily: serifFont,
     },
     locationText: {
         fontSize: 14,
         color: '#FFFFFF',
         fontWeight: '600',
+        fontFamily: serifFont,
     },
     bottomTab: {
         position: 'absolute',

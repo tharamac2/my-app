@@ -260,6 +260,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
         color: '#000000',
+        fontFamily: serifFont,
     },
     infoSection: {
         paddingHorizontal: 20,
@@ -289,6 +290,7 @@ const styles = StyleSheet.create({
         color: '#1A1A1A',
         fontWeight: '600',
         marginBottom: 25,
+        fontFamily: serifFont,
     },
     cardsScroll: {
         marginBottom: 30,
@@ -305,6 +307,7 @@ const styles = StyleSheet.create({
         fontWeight: '800',
         color: '#1A1A1A',
         marginBottom: 15,
+        fontFamily: serifFont,
     },
     gridRow: {
         flexDirection: 'row',
@@ -318,11 +321,13 @@ const styles = StyleSheet.create({
         color: '#666666',
         fontWeight: '700',
         marginBottom: 4,
+        fontFamily: serifFont,
     },
     value: {
         fontSize: 15,
         color: '#000000',
         fontWeight: '800',
+        fontFamily: serifFont,
     },
     actionRow: {
         flexDirection: 'row',
@@ -345,6 +350,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: '800',
         color: '#000000',
+        fontFamily: serifFont,
     },
     chatActionBtn: {
         backgroundColor: '#FDBE01',

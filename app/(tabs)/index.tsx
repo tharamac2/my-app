@@ -480,9 +480,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#666666',
+    fontFamily: serifFont,
   },
   filterChipTextActive: {
     color: '#FFFFFF',
+    fontFamily: serifFont,
   },
   upgradeSection: {
     paddingHorizontal: 20,
@@ -516,10 +518,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FDBE01',
     marginBottom: 4,
+    fontFamily: serifFont,
   },
   upgradeBtnTextSub: {
     fontSize: 13,
     color: '#CCCCCC',
+    fontFamily: serifFont,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -545,6 +549,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#000',
+    fontFamily: serifFont,
   },
   topMatchContainer: {
     width: width * 0.85,
@@ -594,11 +599,13 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     opacity: 0.9,
     marginBottom: 3,
+    fontFamily: serifFont,
   },
   overlayLocation: {
     fontSize: 14,
     color: '#FFFFFF',
     fontWeight: '600',
+    fontFamily: serifFont,
   },
   actionRow: {
     flexDirection: 'row',
@@ -619,6 +626,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#000',
     marginLeft: 8,
+    fontFamily: serifFont,
   },
 
   recentScroll: {
@@ -655,11 +663,13 @@ const styles = StyleSheet.create({
     color: '#666',
     fontWeight: '600',
     marginBottom: 2,
+    fontFamily: serifFont,
   },
   recentLocation: {
     fontSize: 11,
     color: '#888',
     fontWeight: '600',
+    fontFamily: serifFont,
   },
   subCard: {
     width: 250,
@@ -686,10 +696,12 @@ const styles = StyleSheet.create({
   subPrice: {
     fontSize: 24,
     fontWeight: 'bold',
+    fontFamily: serifFont,
   },
   subDuration: {
     fontSize: 14,
     opacity: 0.8,
+    fontFamily: serifFont,
   },
   subBenefits: {
     marginBottom: 20,
@@ -703,6 +715,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginLeft: 8,
     opacity: 0.9,
+    fontFamily: serifFont,
   },
   subBtn: {
     paddingVertical: 12,
@@ -713,6 +726,7 @@ const styles = StyleSheet.create({
   subBtnText: {
     fontWeight: 'bold',
     fontSize: 14,
+    fontFamily: serifFont,
   },
   motivationContainer: {
     paddingHorizontal: 20,
@@ -751,6 +765,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#4A4A4A',
     fontStyle: 'italic',
+    fontFamily: serifFont,
   },
   modalOverlay: {
     flex: 1,
@@ -795,6 +810,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 25,
+    fontFamily: serifFont,
   },
   modalCtaBtn: {
     backgroundColor: '#FDBE01',
@@ -808,5 +824,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#1A1A1A',
+    fontFamily: serifFont,
   },
 });

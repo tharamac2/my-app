@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import {
@@ -103,11 +103,11 @@ export default function RecentlyViewedScreen() {
                 <TouchableOpacity onPress={() => router.push('/(tabs)/chat')}>
                     <Ionicons name="chatbubble-ellipses-outline" size={24} color="#000" />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.addBtn}>
-                    <Ionicons name="add" size={32} color="#000" />
-                </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/matches')}>
                     <Ionicons name="heart-outline" size={24} color="#000" />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/(tabs)/premium')}>
+                    <MaterialCommunityIcons name="crown-outline" size={24} color="#000" />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
                     <Ionicons name="person-outline" size={24} color="#000" />
