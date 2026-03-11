@@ -1,9 +1,10 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
+import api from '../../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -51,6 +52,19 @@ const CompletenessRing = ({ size, progress, strokeWidth }: { size: number, progr
 
 export default function ProfileDashboard() {
     const router = useRouter();
+    const [profileData, setProfileData] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const res = await api.get('/profile/me');
+                setProfileData(res.data);
+            } catch (error) {
+                console.error("Failed to fetch profile", error);
+            }
+        };
+        fetchProfile();
+    }, []);
 
     const handleLogout = () => {
         router.replace('/welcome');
@@ -78,7 +92,7 @@ export default function ProfileDashboard() {
                             <View style={styles.profileImageContainer}>
                                 <CompletenessRing size={ringSize} progress={80} strokeWidth={ringStrokeWidth} />
                                 <Image
-                                    source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop' }}
+                                    source={{ uri: profileData?.photos?.[0]?.photo_url || 'https://via.placeholder.com/150' }}
                                     style={[styles.profileImage, { width: profileImageSize, height: profileImageSize, borderRadius: profileImageSize / 2 }]}
                                 />
                             </View>
@@ -89,10 +103,10 @@ export default function ProfileDashboard() {
 
                         <View style={styles.profileInfoContainer}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.name}>Prisha Mirha</Text>
+                                <Text style={styles.name}>{profileData?.full_name || 'Loading...'}</Text>
                                 <MaterialCommunityIcons name="check-decagram" size={20} color="#0084FF" style={{ marginLeft: 4, marginTop: 4 }} />
                             </View>
-                            <Text style={styles.email}>prisha.m@example.com</Text>
+                            <Text style={styles.email}>{profileData?.email || ''}</Text>
 
                             <View style={styles.trustBadgeWrapper}>
                                 <View style={styles.trustBadge}>

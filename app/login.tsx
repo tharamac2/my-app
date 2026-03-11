@@ -2,6 +2,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
+import api from '../services/api';
+import useAuthStore from '../store/authStore';
 import {
     Dimensions,
     KeyboardAvoidingView,
@@ -48,12 +50,14 @@ export default function LoginScreen() {
     const [mobileError, setMobileError] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
     const otpFields = useRef<Array<TextInput | null>>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const login = useAuthStore((state) => state.login);
 
     const validateEmail = (text: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
     const validateMobile = (text: string) => /^[0-9]{10}$/.test(text);
     const validatePassword = (text: string) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_])[A-Za-z\d@$!%*?&_]{8,}$/.test(text);
 
-    const handleEmailLogin = () => {
+    const handleEmailLogin = async () => {
         let valid = true;
         if (!email || !validateEmail(email)) {
             setEmailError('Please enter a valid email address');
@@ -62,15 +66,28 @@ export default function LoginScreen() {
             setEmailError('');
         }
 
-        if (!password || !validatePassword(password)) {
-            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+        if (!password) {
+            setPasswordError('Password is required');
             valid = false;
         } else {
             setPasswordError('');
         }
 
         if (valid) {
-            router.replace('/(tabs)' as any);
+            try {
+                setIsLoading(true);
+                const response = await api.post('/auth/login', {
+                    email,
+                    password
+                });
+                login(response.data.token, response.data.user);
+                router.replace('/(tabs)' as any);
+            } catch (error: any) {
+                console.error(error);
+                setPasswordError(error.response?.data?.error || 'Failed to login');
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -155,10 +172,11 @@ export default function LoginScreen() {
             </View>
 
             <TouchableOpacity
-                style={styles.primaryButton}
+                style={[styles.primaryButton, isLoading && { opacity: 0.7 }]}
                 onPress={handleEmailLogin}
+                disabled={isLoading}
             >
-                <Text style={styles.primaryButtonText}>login</Text>
+                <Text style={styles.primaryButtonText}>{isLoading ? 'Logging in...' : 'login'}</Text>
             </TouchableOpacity>
 
             <View style={styles.footer}>

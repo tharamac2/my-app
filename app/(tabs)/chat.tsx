@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import {
     FlatList,
     Image,
@@ -19,76 +20,36 @@ const serifFont = Platform.select({
     default: 'serif',
 });
 
-// Mock data based on the design image
-const MESSAGES = [
-    {
-        id: '1',
-        name: 'kaviya',
-        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-        lastMessage: 'sticker 😊',
-        time: '22 min',
-        unread: 1,
-    },
-    {
-        id: '2',
-        name: 'Selvi',
-        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop',
-        lastMessage: 'How are you?',
-        time: '22 min',
-        unread: 2,
-    },
-    {
-        id: '3',
-        name: 'Riya Shibu',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-        lastMessage: 'Hello?',
-        time: '47 min',
-        unread: 0,
-    },
-    {
-        id: '4',
-        name: 'jannu',
-        imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop',
-        lastMessage: 'Ok bye....',
-        time: '56 min',
-        unread: 0,
-    },
-    {
-        id: '5',
-        name: 'Ramya',
-        imageUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1000&auto=format&fit=crop',
-        lastMessage: 'Mmm',
-        time: '1 Hour',
-        unread: 0,
-    },
-    {
-        id: '6',
-        name: 'kavi',
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-        lastMessage: 'what are you doing ?',
-        time: '2 Hour',
-        unread: 0,
-    },
-    {
-        id: '7',
-        name: 'Riya Shibu',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-        lastMessage: 'Hello?',
-        time: '47 min',
-        unread: 0,
-    },
-];
-
 export default function ChatScreen() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
+    const [messagesList, setMessagesList] = useState<any[]>([]);
 
-    const renderMessageItem = ({ item }: { item: typeof MESSAGES[0] }) => (
+    useEffect(() => {
+        fetchConversations();
+    }, []);
+
+    const fetchConversations = async () => {
+        try {
+            const response = await api.get('/chat/conversations');
+            setMessagesList(response.data.conversations || []);
+        } catch (error) {
+            console.error("Failed to fetch conversations:", error);
+        }
+    };
+
+    const formatTime = (isoString: string) => {
+        if (!isoString) return '';
+        const d = new Date(isoString);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    };
+
+    const renderMessageItem = ({ item }: { item: any }) => (
         <TouchableOpacity
             style={styles.messageItem}
             onPress={() => router.push({
                 pathname: '/chat-detail',
-                params: { name: item.name, imageUrl: item.imageUrl }
+                params: { name: item.name, imageUrl: item.imageUrl, matchId: item.match_id }
             })}
         >
             <View style={styles.avatarBorder}>
@@ -98,7 +59,7 @@ export default function ChatScreen() {
             <View style={styles.messageContent}>
                 <View style={styles.messageHeader}>
                     <Text style={styles.senderName}>{item.name}</Text>
-                    <Text style={styles.timeText}>{item.time}</Text>
+                    <Text style={styles.timeText}>{formatTime(item.time)}</Text>
                 </View>
 
                 <View style={styles.messageFooter}>
@@ -139,9 +100,9 @@ export default function ChatScreen() {
             </View>
 
             <FlatList
-                data={MESSAGES.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))}
+                data={messagesList.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))}
                 renderItem={renderMessageItem}
-                keyExtractor={item => item.id}
+                keyExtractor={item => item.match_id.toString()}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}
             />

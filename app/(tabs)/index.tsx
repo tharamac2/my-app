@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import api from '../../services/api';
 import {
   Dimensions,
   FlatList,
@@ -25,28 +26,6 @@ const serifFont = Platform.select({
 });
 
 const FILTER_CHIPS = ['New Matches', 'Nearby', 'Premium', 'Same Profession', 'Online Now'];
-
-const DUMMY_TOP_MATCHES = [
-  {
-    id: '1',
-    name: 'Prisha Mirha',
-    age: 28,
-    profession: 'Software Professional',
-    degree: 'Graduate',
-    location: 'Dwaraka, New Delhi',
-    imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-  },
-  {
-    id: '2',
-    name: 'Aishwarya',
-    age: 26,
-    profession: 'UX Designer',
-    degree: 'B.Des',
-    location: 'Bangalore, India',
-    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-  },
-];
-
 
 const DUMMY_RECENT = [
   {
@@ -103,38 +82,62 @@ export default function DiscoverScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [likedProfiles, setLikedProfiles] = useState<string[]>([]);
+  const [topMatches, setTopMatches] = useState<any[]>([]);
 
-  const handleToggleLike = (id: string, e?: any) => {
+  const handleToggleLike = async (id: string, e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
+    
+    // Optimistic UI update
+    const isLiked = likedProfiles.includes(id);
     setLikedProfiles(prev =>
-      prev.includes(id) ? prev.filter(pId => pId !== id) : [...prev, id]
+      isLiked ? prev.filter(pId => pId !== id) : [...prev, id]
     );
+
+    try {
+      await api.post('/matches/action', {
+        target_id: parseInt(id),
+        action: isLiked ? 'pass' : 'like'
+      });
+    } catch (error) {
+       console.error("Match action failed", error);
+       // Revert UI update gracefully if needed
+    }
   };
 
   React.useEffect(() => {
     // Show premium modal every time the app/screen is opened
     setShowPremiumModal(true);
+    fetchFeed();
   }, []);
 
-  const renderTopMatch = ({ item }: { item: typeof DUMMY_TOP_MATCHES[0] }) => (
+  const fetchFeed = async () => {
+    try {
+      const response = await api.get('/discovery/feed');
+      setTopMatches(response.data.feed);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const renderTopMatch = ({ item }: { item: any }) => (
     <View style={styles.topMatchContainer}>
       <TouchableOpacity
         activeOpacity={0.9}
         style={styles.topMatchCard}
         onPress={() => router.push({
           pathname: '/profile-detail',
-          params: { name: item.name, age: item.age.toString() }
+          params: { name: item.full_name, age: item.age?.toString() }
         })}
       >
-        <Image source={{ uri: item.imageUrl }} style={styles.topMatchImage} />
+        <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/400' }} style={styles.topMatchImage} />
 
         {/* Heart icon overlay */}
         <TouchableOpacity
           style={styles.heartOverlay}
-          onPress={(e) => handleToggleLike(item.id, e)}
+          onPress={(e) => handleToggleLike(item.id.toString(), e)}
         >
           <Ionicons
-            name={likedProfiles.includes(item.id) ? "heart" : "heart-outline"}
+            name={likedProfiles.includes(item.id.toString()) ? "heart" : "heart-outline"}
             size={24}
             color="#FDBE01"
           />
@@ -142,9 +145,12 @@ export default function DiscoverScreen() {
 
         {/* Info overlay */}
         <View style={styles.topMatchInfoOverlay}>
-          <Text style={styles.overlayName}>{item.name}, {item.age}</Text>
-          <Text style={styles.overlayDetails}>{item.profession} - {item.degree}</Text>
+          <Text style={styles.overlayName}>{item.full_name}, {item.age || 'N/A'}</Text>
+          <Text style={styles.overlayDetails}>{item.profession || 'Professional'} - {item.education || 'Graduate'}</Text>
           <Text style={styles.overlayLocation}>{item.location}</Text>
+          {item.compatibility_score ? (
+              <Text style={{color: '#FDBE01', marginTop: 4}}>{item.compatibility_score}% Match</Text>
+          ) : null}
         </View>
       </TouchableOpacity>
 
@@ -154,7 +160,7 @@ export default function DiscoverScreen() {
           style={styles.actionBtn}
           onPress={() => router.push({
             pathname: '/chat-detail',
-            params: { name: item.name, imageUrl: item.imageUrl }
+            params: { name: item.full_name, imageUrl: item.photo_url }
           })}
         >
           <Ionicons name="chatbubble" size={20} color="#000" />
@@ -249,9 +255,9 @@ export default function DiscoverScreen() {
         </View>
 
         <FlatList
-          data={DUMMY_TOP_MATCHES}
+          data={topMatches}
           renderItem={renderTopMatch}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()}
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}

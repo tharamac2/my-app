@@ -1,45 +1,51 @@
-from flask import Flask, request, jsonify
+import os
+from flask import Flask
 from flask_cors import CORS
-from astrology_matcher import calculate_compatibility
+from flask_jwt_extended import JWTManager
+from models import db
+from dotenv import load_dotenv
 
-app = Flask(__name__)
-CORS(app)  # Allow Expo app to communicate
+# Load environment variables
+load_dotenv()
 
-# Dummy Database Mock (Ideally this would pull from MySQL `users` table)
-# We mock it here for fast frontend integration.
-USERS_DB = {
-    "1": {"name": "Jack Lawson", "gender": "boy", "nakshatra": "Ashwini", "rasi": "Mesha"},
-    "2": {"name": "Prisha Mirha", "gender": "girl", "nakshatra": "Rohini", "rasi": "Vrishabha"},
-    "3": {"name": "Aishwarya", "gender": "girl", "nakshatra": "Krittika", "rasi": "Mithuna"},
-    "4": {"name": "Diya Patel", "gender": "girl", "nakshatra": "Magha", "rasi": "Simha"},
-    "p1": {"name": "Kavya", "gender": "girl", "nakshatra": "Revati", "rasi": "Meena"},
-    "p2": {"name": "Nisha", "gender": "girl", "nakshatra": "Chitra", "rasi": "Kanya"}
-}
+def create_app():
+    app = Flask(__name__)
+    CORS(app)
 
-PRIMARY_USER_ID = "1"  # Assume Jack is logged in
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-secret')
+    app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'jwt-secret')
+    
+    # Construct DB URI: fallback to sqlite if mysql is not available for testing
+    db_uri = os.getenv('DATABASE_URI', 'sqlite:///matrimony.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-@app.route('/api/matches/compatibility', methods=['GET'])
-def get_compatibility():
-    target_id = request.args.get('target_user_id')
-    primary_id = request.args.get('primary_user_id', PRIMARY_USER_ID)
+    # Initialize Extensions
+    db.init_app(app)
+    JWTManager(app)
 
-    if not target_id or target_id not in USERS_DB:
-        return jsonify({"error": "Target User not found"}), 404
+    # Register Blueprints
+    from routes.auth import auth_bp
+    from routes.profile import profile_bp
+    from routes.discovery import discovery_bp
+    from routes.matches import matches_bp
+    from routes.chat import chat_bp
 
-    try:
-        boy = USERS_DB[primary_id] if USERS_DB[primary_id]["gender"] == "boy" else USERS_DB[target_id]
-        girl = USERS_DB[target_id] if USERS_DB[target_id]["gender"] == "girl" else USERS_DB[primary_id]
+    app.register_blueprint(auth_bp, url_prefix='/api/auth')
+    app.register_blueprint(profile_bp, url_prefix='/api/profile')
+    app.register_blueprint(discovery_bp, url_prefix='/api/discovery')
+    app.register_blueprint(matches_bp, url_prefix='/api/matches')
+    app.register_blueprint(chat_bp, url_prefix='/api/chat')
 
-        result = calculate_compatibility(
-            boy_n=boy["nakshatra"], boy_r=boy["rasi"],
-            girl_n=girl["nakshatra"], girl_r=girl["rasi"]
-        )
+    with app.app_context():
+        db.create_all()
 
-        return jsonify(result), 200
+    @app.route('/', methods=['GET'])
+    def index():
+        return {"status": "ok", "message": "Matrimony API is running!"}
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    return app
 
 if __name__ == '__main__':
-    print("Starting Astrology Matching Engine on port 5000...")
-    app.run(host='0.0.0.0', port=5000)
+    app = create_app()
+    app.run(host='0.0.0.0', port=5000, debug=True)

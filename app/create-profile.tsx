@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import api from '../services/api';
 import {
     Alert,
     Dimensions,
@@ -218,6 +219,31 @@ export default function CreateProfileScreen() {
         return gender === 'female' ? 'her' : 'him';
     };
 
+    const submitProfileDetails = async () => {
+        try {
+            const locationStr = [city, state, livingIn].filter(Boolean).join(', ');
+            await api.put('/profile/me/details', {
+                full_name: `${firstName} ${lastName}`.trim(),
+                gender: gender,
+                dob: dob ? dob.toISOString() : null,
+                location: locationStr,
+                height: height,
+                weight: weight,
+                religion: religion,
+                caste: community,
+                education: qualification,
+                profession: worksAs,
+                income: income,
+                nakshatra: star,
+                rasi: zodiac
+            });
+            setStep('success');
+        } catch (error: any) {
+            console.error('Error submitting profile:', error);
+            Alert.alert('Error', error.response?.data?.error || 'Could not save profile details');
+        }
+    };
+
     const handleContinue = () => {
         if (step === 'profile_for') {
             if (profileFor === 'myself' || profileFor === 'friend' || profileFor === 'relative') {
@@ -242,7 +268,8 @@ export default function CreateProfileScreen() {
         else if (step === 'qualification') setStep('work');
         else if (step === 'work') setStep('horoscope');
         else if (step === 'horoscope') setStep('uploads');
-        else if (step === 'uploads') setStep('success');
+        else if (step === 'uploads') submitProfileDetails();
+        else if (step === 'success') router.replace('/(tabs)');
         else router.replace('/(tabs)');
     };
 

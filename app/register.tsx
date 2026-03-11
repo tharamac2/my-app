@@ -3,6 +3,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
+import api from '../services/api';
+import useAuthStore from '../store/authStore';
 import {
     Dimensions,
     FlatList,
@@ -49,13 +51,17 @@ export default function RegisterScreen() {
     const [step, setStep] = useState<RegisterStep>('choice');
     const [email, setEmail] = useState('');
     const [mobileNumber, setMobileNumber] = useState('');
+    const [fullName, setFullName] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [mobileError, setMobileError] = useState('');
+    const [nameError, setNameError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [otp, setOtp] = useState(['', '', '', '']);
     const [googleModalVisible, setGoogleModalVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const login = useAuthStore((state) => state.login);
     const otpFields = useRef<Array<TextInput | null>>([]);
 
     const deviceAccounts = [
@@ -79,16 +85,21 @@ export default function RegisterScreen() {
             setEmailError('');
         }
 
+        if (!fullName || fullName.length < 2) {
+            setNameError('Please enter your full name');
+            valid = false;
+        } else {
+            setNameError('');
+        }
+
         if (!password || !validatePassword(password)) {
-            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+            setPasswordError('Password must be at least 8 char with 1 upper, 1 lower, 1 num, 1 special');
             valid = false;
         } else {
             setPasswordError('');
         }
 
-        if (valid) {
-            setStep('otp');
-        }
+        if (valid) setStep('otp');
     };
 
     const handleMobileSignup = () => {
@@ -100,15 +111,39 @@ export default function RegisterScreen() {
             setMobileError('');
         }
 
+        if (!fullName || fullName.length < 2) {
+            setNameError('Please enter your full name');
+            valid = false;
+        } else {
+            setNameError('');
+        }
+
         if (!password || !validatePassword(password)) {
-            setPasswordError('Password must be at least 8 characters with 1 uppercase, 1 lowercase, 1 number, and 1 special character');
+            setPasswordError('Password must be at least 8 char with 1 upper, 1 lower, 1 num, 1 special');
             valid = false;
         } else {
             setPasswordError('');
         }
 
-        if (valid) {
-            setStep('otp');
+        if (valid) setStep('otp');
+    };
+
+    const submitRegistration = async () => {
+        try {
+            setIsLoading(true);
+            const userEmail = email ? email : `${mobileNumber}@phone.user`;
+            const response = await api.post('/auth/register', {
+                email: userEmail,
+                password,
+                full_name: fullName
+            });
+            login(response.data.token, response.data.user);
+            router.replace('/create-profile' as any);
+        } catch (error: any) {
+            console.error("Registration error:", error);
+            alert(error.response?.data?.error || error.message || "Registration failed");
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -168,6 +203,19 @@ export default function RegisterScreen() {
     const renderEmailInput = () => (
         <View style={styles.card}>
             <View style={styles.topSpacer} />
+            <View style={[styles.inputPill, nameError ? styles.inputError : null, { marginBottom: 20 }]}>
+                <Ionicons name="person-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
+                <TextInput
+                    style={styles.pillInput}
+                    placeholder="Enter your Full Name"
+                    placeholderTextColor="#999"
+                    value={fullName}
+                    onChangeText={(val) => { setFullName(val); setNameError(''); }}
+                    autoCapitalize="words"
+                />
+            </View>
+            {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
+
             <View style={[styles.inputPill, emailError ? styles.inputError : null, { marginBottom: 20 }]}>
                 <Ionicons name="mail-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
                 <TextInput
@@ -213,6 +261,19 @@ export default function RegisterScreen() {
     const renderPhoneInput = () => (
         <View style={styles.card}>
             <View style={styles.topSpacer} />
+
+            <View style={[styles.inputPill, nameError ? styles.inputError : null, { marginBottom: 20 }]}>
+                <Ionicons name="person-outline" size={24} color="#1A1A1A" style={styles.pillIcon} />
+                <TextInput
+                    style={styles.pillInput}
+                    placeholder="Enter your Full Name"
+                    placeholderTextColor="#999"
+                    value={fullName}
+                    onChangeText={(val) => { setFullName(val); setNameError(''); }}
+                    autoCapitalize="words"
+                />
+            </View>
+            {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
 
             <View style={[styles.inputPill, { paddingLeft: 0 }, mobileError ? styles.inputError : null, { marginBottom: 20 }]}>
                 <View style={styles.countryCode}>
@@ -352,10 +413,11 @@ export default function RegisterScreen() {
             </View>
 
             <TouchableOpacity
-                style={[styles.primaryPillButton, { marginTop: 80 }]}
-                onPress={() => router.replace('/create-profile' as any)}
+                style={[styles.primaryPillButton, { marginTop: 80 }, isLoading && { opacity: 0.7 }]}
+                onPress={submitRegistration}
+                disabled={isLoading}
             >
-                <Text style={styles.primaryPillButtonText}>Verify OTP</Text>
+                <Text style={styles.primaryPillButtonText}>{isLoading ? 'Creating account...' : 'Verify OTP'}</Text>
             </TouchableOpacity>
         </View>
     );

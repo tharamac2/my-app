@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../../services/api';
 import {
     Dimensions,
     FlatList,
@@ -21,85 +22,86 @@ const serifFont = Platform.select({
     default: 'serif',
 });
 
-const LIKED_YOU = [
-    {
-        id: '1',
-        name: 'Kalyani Priyadarshan',
-        stats: '5.5',
-        location: 'kerala, india',
-        profession: 'Software Engineer',
-        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'Vijaya lakshmi',
-        stats: '5.5',
-        location: 'Tamil Nadu, india',
-        profession: 'Software Engineer',
-        imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=1287&auto=format&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'selvi',
-        stats: '5.5',
-        location: '',
-        profession: 'Software Engineer',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-    },
-    {
-        id: '4',
-        name: 'Kalyani',
-        stats: '5.5',
-        location: 'kerala, india',
-        profession: 'Software Engineer',
-        imageUrl: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?q=80&w=1000&auto=format&fit=crop',
-    },
-];
-
-const YOUR_LIKE = [
-    {
-        id: 'y1',
-        name: 'Aditi Rao',
-        stats: '5.7',
-        location: 'Hyderabad, india',
-        profession: 'Lead Designer',
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-    },
-];
-
-type TabType = 'liked you' | 'your like';
+type TabType = 'Pending' | 'Mutual' | 'Sent';
 
 export default function FavouritesScreen() {
-    const [activeTab, setActiveTab] = useState<TabType>('liked you');
+    const [activeTab, setActiveTab] = useState<TabType>('Pending');
+    const [pendingItems, setPendingItems] = useState<any[]>([]);
+    const [mutualItems, setMutualItems] = useState<any[]>([]);
+    const [sentItems, setSentItems] = useState<any[]>([]);
     const router = useRouter();
 
-    const renderItem = ({ item }: { item: typeof LIKED_YOU[0] }) => (
+    const fetchMatches = async () => {
+        try {
+            const response = await api.get('/matches/');
+            setPendingItems(response.data.liked_you || []);
+            setMutualItems(response.data.mutual || []);
+            setSentItems(response.data.your_likes || []);
+        } catch (error) {
+            console.error("Failed to fetch matches:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchMatches();
+    }, []);
+
+    const handleMatchAction = async (targetId: number, action: string) => {
+        try {
+            await api.post('/matches/action', { target_id: targetId, action });
+            fetchMatches(); // Refresh list after action
+        } catch (error) {
+            console.error("Match action failed:", error);
+        }
+    };
+
+    const handleMessageAction = (item: any) => {
+        router.push({
+            pathname: '/chat-detail',
+            params: { name: item.full_name, imageUrl: item.photo_url || 'https://via.placeholder.com/150' }
+        });
+    };
+
+    const renderItem = ({ item }: { item: any }) => (
         <View style={styles.card}>
             <View style={styles.imageContainer}>
-                <Image source={{ uri: item.imageUrl }} style={styles.image} />
+                <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/150' }} style={styles.image} />
             </View>
 
             <View style={styles.infoContainer}>
-                <Text style={styles.nameText}>{item.name}</Text>
+                <Text style={styles.nameText}>{item.full_name}</Text>
                 <View style={styles.statsRow}>
-                    <Text style={styles.statsText}>{item.stats}</Text>
-                    {item.location ? <Text style={styles.statsText}>  {item.location}</Text> : null}
+                    {item.location ? <Text style={styles.statsText}>{item.location}</Text> : null}
                 </View>
-                <Text style={styles.professionText}>{item.profession}</Text>
+                <Text style={styles.professionText}>{item.profession || 'Professional'}</Text>
 
                 <View style={styles.buttonRow}>
                     <TouchableOpacity
                         style={styles.profileBtn}
                         onPress={() => router.push({
                             pathname: '/profile-detail',
-                            params: { name: item.name }
+                            params: { name: item.full_name }
                         })}
                     >
                         <Text style={styles.profileBtnText}>profile</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.messageBtn}>
-                        <Text style={styles.messageBtnText}>Message</Text>
-                    </TouchableOpacity>
+                    
+                    {activeTab === 'Mutual' && (
+                        <TouchableOpacity style={styles.messageBtn} onPress={() => handleMessageAction(item)}>
+                            <Text style={styles.messageBtnText}>Message</Text>
+                        </TouchableOpacity>
+                    )}
+                    
+                    {activeTab === 'Pending' && (
+                        <>
+                            <TouchableOpacity style={[styles.messageBtn, {backgroundColor: '#E8F5E9', borderColor: '#C8E6C9'}]} onPress={() => handleMatchAction(item.partner_id, 'like')}>
+                                <Text style={[styles.messageBtnText, {color: '#2E7D32'}]}>Accept</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={[styles.messageBtn, {backgroundColor: '#FFEBEE', borderColor: '#FFCDD2'}]} onPress={() => handleMatchAction(item.partner_id, 'pass')}>
+                                <Text style={[styles.messageBtnText, {color: '#C62828'}]}>Decline</Text>
+                            </TouchableOpacity>
+                        </>
+                    )}
                 </View>
             </View>
         </View>
@@ -118,32 +120,43 @@ export default function FavouritesScreen() {
             {/* Tabs */}
             <View style={styles.tabContainer}>
                 <TouchableOpacity
-                    onPress={() => setActiveTab('liked you')}
-                    style={[styles.tabItem, activeTab === 'liked you' && styles.tabItemActive]}
+                    onPress={() => setActiveTab('Pending')}
+                    style={[styles.tabItem, activeTab === 'Pending' && styles.tabItemActive]}
                 >
                     <Text style={[
                         styles.tabText,
-                        activeTab === 'liked you' ? styles.tabTextActive : styles.tabTextInactive
+                        activeTab === 'Pending' ? styles.tabTextActive : styles.tabTextInactive
                     ]}>
-                        Liked You
+                        Pending
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                    onPress={() => setActiveTab('your like')}
-                    style={[styles.tabItem, activeTab === 'your like' && styles.tabItemActive]}
+                    onPress={() => setActiveTab('Mutual')}
+                    style={[styles.tabItem, activeTab === 'Mutual' && styles.tabItemActive]}
                 >
                     <Text style={[
                         styles.tabText,
-                        activeTab === 'your like' ? styles.tabTextActive : styles.tabTextInactive
+                        activeTab === 'Mutual' ? styles.tabTextActive : styles.tabTextInactive
                     ]}>
-                        Your Likes
+                        Mutual
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={() => setActiveTab('Sent')}
+                    style={[styles.tabItem, activeTab === 'Sent' && styles.tabItemActive]}
+                >
+                    <Text style={[
+                        styles.tabText,
+                        activeTab === 'Sent' ? styles.tabTextActive : styles.tabTextInactive
+                    ]}>
+                        Sent
                     </Text>
                 </TouchableOpacity>
             </View>
 
             <FlatList
-                data={activeTab === 'liked you' ? LIKED_YOU : YOUR_LIKE}
-                keyExtractor={item => item.id}
+                data={activeTab === 'Pending' ? pendingItems : activeTab === 'Mutual' ? mutualItems : sentItems}
+                keyExtractor={item => item.match_id?.toString() || item.partner_id?.toString()}
                 renderItem={renderItem}
                 contentContainerStyle={styles.listContent}
                 showsVerticalScrollIndicator={false}

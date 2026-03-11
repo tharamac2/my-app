@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import api from '../services/api';
+import useAuthStore from '../store/authStore';
 import {
     Alert,
     Dimensions,
@@ -40,55 +42,55 @@ export default function ChatDetailScreen() {
 
     const chatPartner = {
         name: (params.name as string) || 'Riya Shibu',
-        imageUrl: (params.imageUrl as string) || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
+        imageUrl: (params.imageUrl as string) || 'https://via.placeholder.com/150',
     };
-    const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the indu',
-            sender: 'other',
-            time: '15.34pm',
-        },
-        {
-            id: '2',
-            text: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the indu',
-            sender: 'me',
-            time: '15.34pm',
-            status: 'read',
-        },
-        {
-            id: '3',
-            text: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the indu',
-            sender: 'other',
-            time: '15.34pm',
-        },
-        {
-            id: '4',
-            text: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the indu',
-            sender: 'me',
-            time: '6.24pm',
-            status: 'read',
-        },
-    ]);
+    const { user } = useAuthStore();
+    const [messages, setMessages] = useState<Message[]>([]);
 
-    const handleSendMessage = () => {
-        if (message.trim().length === 0) return;
+    useEffect(() => {
+        if (params.matchId) fetchChatHistory();
+    }, [params.matchId]);
 
-        const newMessage: Message = {
-            id: Date.now().toString(),
-            text: message,
-            sender: 'me',
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }).toLowerCase().replace(' ', ''),
-            status: 'sent'
-        };
+    const fetchChatHistory = async () => {
+        try {
+            const res = await api.get(`/chat/${params.matchId}`);
+            const formatted = res.data.messages.map((m: any) => ({
+                id: m.id.toString(),
+                text: m.text,
+                sender: m.sender_id === user?.id ? 'me' : 'other',
+                time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: m.is_read ? 'read' : 'sent'
+            }));
+            setMessages(formatted);
+            setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+            }, 100);
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
-        setMessages(prev => [...prev, newMessage]);
-        setMessage('');
+    const handleSendMessage = async () => {
+        if (message.trim().length === 0 || !params.matchId) return;
 
-        // Scroll to bottom after state update
-        setTimeout(() => {
-            flatListRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        try {
+            const res = await api.post(`/chat/${params.matchId}/send`, { text: message });
+            const m = res.data.data;
+            const newMessage: Message = {
+                id: m.id.toString(),
+                text: m.text,
+                sender: 'me',
+                time: new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                status: 'sent'
+            };
+            setMessages(prev => [...prev, newMessage]);
+            setMessage('');
+            setTimeout(() => {
+                flatListRef.current?.scrollToEnd({ animated: true });
+            }, 10);
+        } catch (e) {
+             console.error("Failed to send message", e);
+        }
     };
 
     const handleMicPress = () => {
