@@ -4,10 +4,10 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
 const debuggerHost = Constants.expoConfig?.hostUri;
-const localIp = debuggerHost?.split(':')[0] || '192.168.0.5';
+const localIp = debuggerHost?.split(':')[0] || '192.168.0.9';
 
 const API_IP = Platform.OS === 'android' && !debuggerHost ? '10.0.2.2' : localIp;
-const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:5000/api' : `http://${API_IP}:5000/api`;
+const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:8000/api/v1' : `http://${API_IP}:8000/api/v1`;
 
 const api = axios.create({
     baseURL: BASE_URL,

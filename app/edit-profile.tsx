@@ -39,9 +39,21 @@ export default function EditProfileScreen() {
         }).catch((err: any) => console.log(err));
     }, []);
 
-    const handleSave = () => {
-        // Implement save logic here
-        router.back();
+    const handleSave = async () => {
+        try {
+            await api.put('/profile/me/details', {
+                full_name: name,
+                bio: bio,
+                phone: phone,
+                location: location,
+                profession: profession,
+                education: education
+            });
+            router.back();
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            alert("Could not update profile details. Please try again.");
+        }
     };
 
     return (
