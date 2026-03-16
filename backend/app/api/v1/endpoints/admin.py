@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.api import deps
 from app.models.user import User
-from app.models.admin_model import Admin, UserActivityLog
+from app.models.admin_model import UserActivityLog
 from app.models.billing import Subscription, Payment
 from app.models.social import Match, Message, Report
 from app.schemas.user import UserOut
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.get("/users", response_model=List[UserOut])
 def list_users(
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
@@ -32,7 +32,7 @@ def verify_user(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -47,7 +47,7 @@ def block_user(
     *,
     db: Session = Depends(deps.get_db),
     user_id: str,
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -60,7 +60,7 @@ def block_user(
 @router.get("/stats", response_model=Any)
 def get_stats(
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     from datetime import timedelta
     
@@ -132,14 +132,14 @@ def get_stats(
 @router.get("/reports", response_model=Any)
 def list_reports(
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     return db.query(Report).all()
 
 @router.get("/activity-logs", response_model=List[Any])
 def list_activity_logs(
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
@@ -160,7 +160,7 @@ def list_activity_logs(
 def get_user_full_profile(
     user_id: str,
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     user = db.query(User).filter(User.id == user_id).first()
     if not user:
@@ -188,7 +188,7 @@ def reset_user_password(
     user_id: str,
     new_password: str,
     db: Session = Depends(deps.get_db),
-    admin_user: Admin = Depends(deps.get_current_admin),
+    admin_user: User = Depends(deps.get_current_admin),
 ) -> Any:
     from app.core.security import get_password_hash
     user = db.query(User).filter(User.id == user_id).first()

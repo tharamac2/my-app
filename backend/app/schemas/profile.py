@@ -78,6 +78,7 @@ class ProfileCompleteOut(BaseModel):
     id: str
     email: str
     full_name: str
+    role: str
     is_verified: bool
     profile: Optional[UserProfileOut] = None
     details: Optional[UserDetailOut] = None

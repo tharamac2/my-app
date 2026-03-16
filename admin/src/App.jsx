@@ -43,8 +43,8 @@ const App = () => {
       const token = localStorage.getItem('admin_token');
       if (token) {
         try {
-          const res = await api.get('/admin/auth/me');
-          if (res.data.role.includes('admin')) {
+          const res = await api.get('/profile/me');
+          if (res.data.role === 'admin') {
             setUser(res.data);
           } else {
             localStorage.removeItem('admin_token');

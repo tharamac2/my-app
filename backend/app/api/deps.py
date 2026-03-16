@@ -9,9 +9,7 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import SessionLocal
 from app.models.user import User
-from app.models.admin_model import Admin
 from app.schemas.user import TokenPayload
-from app.schemas.admin_schemas import AdminRole
 
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl=f"{settings.API_V1_STR}/auth/login/access-token"
@@ -44,7 +42,7 @@ def get_current_user(
 
 def get_current_admin(
     db: Session = Depends(get_db), token: str = Depends(reusable_oauth2)
-) -> Admin:
+) -> User:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
@@ -55,15 +53,17 @@ def get_current_admin(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
-    admin = db.query(Admin).filter(Admin.id == token_data.sub).first()
-    if not admin:
+    user = db.query(User).filter(User.id == token_data.sub).first()
+    if not user:
         raise HTTPException(status_code=404, detail="Admin not found")
-    if not admin.is_active:
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="The user doesn't have enough privileges")
+    if not user.is_active:
         raise HTTPException(status_code=403, detail="Admin account is inactive")
-    return admin
+    return user
 
-def check_admin_role(roles: list[AdminRole]):
-    def role_checker(admin: Admin = Depends(get_current_admin)):
+def check_admin_role(roles: list[str]):
+    def role_checker(admin: User = Depends(get_current_admin)):
         if admin.role not in roles:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

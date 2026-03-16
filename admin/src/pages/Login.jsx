@@ -17,17 +17,17 @@ const Login = ({ onLogin }) => {
       formData.append('username', values.email);
       formData.append('password', values.password);
 
-      const response = await axios.post('/api/v1/admin/auth/login', formData);
+      const response = await axios.post('/api/v1/auth/login/access-token', formData);
       
       const token = response.data.access_token;
       localStorage.setItem('admin_token', token);
       
       // Verify if user is actually an admin
-      const userRes = await axios.get('/api/v1/admin/auth/me', {
+      const userRes = await axios.get('/api/v1/profile/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      if (!userRes.data.role.includes('admin')) {
+      if (userRes.data.role !== 'admin') {
         localStorage.removeItem('admin_token');
         message.error('Access denied. You do not have admin privileges.');
       } else {
