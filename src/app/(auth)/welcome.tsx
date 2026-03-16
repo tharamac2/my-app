@@ -38,7 +38,7 @@ const SLIDES = [
         id: '3',
         title: 'Astrological Compatibility',
         description: 'Discover deep insights into your compatibility with detailed Vedic astrology matching for a harmonious union.',
-        image: require('../assets/images/astrology_bg.png'),
+        image: require('../../../assets/images/astrology_bg.png'),
     },
 ];
 

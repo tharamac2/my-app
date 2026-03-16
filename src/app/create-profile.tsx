@@ -239,7 +239,7 @@ export default function CreateProfileScreen() {
     const submitProfileDetails = async () => {
         try {
             const locationStr = [city, state, livingIn].filter(Boolean).join(', ');
-            await api.put('/profile/me/details', {
+            await api.put('/profile/me/setup', {
                 full_name: `${firstName} ${lastName}`.trim(),
                 gender: gender,
                 dob: dob ? dob.toISOString() : null,

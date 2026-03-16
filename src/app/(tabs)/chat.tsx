@@ -11,8 +11,10 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonList } from '@/components/SkeletonLoader';
 
 const serifFont = Platform.select({
     ios: 'Georgia',
@@ -24,6 +26,8 @@ export default function ChatScreen() {
     const router = useRouter();
     const [searchQuery, setSearchQuery] = useState('');
     const [messagesList, setMessagesList] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         fetchConversations();
@@ -31,10 +35,23 @@ export default function ChatScreen() {
 
     const fetchConversations = async () => {
         try {
+            setLoading(true);
             const response = await api.get('/chat/conversations');
             setMessagesList(response.data.conversations || []);
         } catch (error) {
             console.error("Failed to fetch conversations:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const response = await api.get('/chat/conversations');
+            setMessagesList(response.data.conversations || []);
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -99,13 +116,25 @@ export default function ChatScreen() {
                 />
             </View>
 
-            <FlatList
-                data={messagesList.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))}
-                renderItem={renderMessageItem}
-                keyExtractor={item => item.match_id.toString()}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {loading && !refreshing ? (
+                <View style={{ flex: 1, padding: 20 }}>
+                    <SkeletonList count={4} />
+                </View>
+            ) : (
+                <FlatList
+                    data={messagesList.filter(m => m.name.toLowerCase().includes(searchQuery.toLowerCase()))}
+                    renderItem={renderMessageItem}
+                    keyExtractor={item => item.match_id.toString()}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FDBE01']} />}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ fontFamily: serifFont, color: '#666' }}>No messages found.</Text>
+                        </View>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }

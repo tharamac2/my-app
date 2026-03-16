@@ -11,8 +11,10 @@ import {
     Text,
     TouchableOpacity,
     View,
+    RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { SkeletonList } from '@/components/SkeletonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -31,14 +33,32 @@ export default function FavouritesScreen() {
     const [sentItems, setSentItems] = useState<any[]>([]);
     const router = useRouter();
 
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+
     const fetchMatches = async () => {
         try {
+            setLoading(true);
             const response = await api.get('/matches/');
             setPendingItems(response.data.liked_you || []);
             setMutualItems(response.data.mutual || []);
             setSentItems(response.data.your_likes || []);
         } catch (error) {
             console.error("Failed to fetch matches:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const response = await api.get('/matches/');
+            setPendingItems(response.data.liked_you || []);
+            setMutualItems(response.data.mutual || []);
+            setSentItems(response.data.your_likes || []);
+        } finally {
+            setRefreshing(false);
         }
     };
 
@@ -154,13 +174,25 @@ export default function FavouritesScreen() {
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={activeTab === 'Pending' ? pendingItems : activeTab === 'Mutual' ? mutualItems : sentItems}
-                keyExtractor={item => item.match_id?.toString() || item.partner_id?.toString()}
-                renderItem={renderItem}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {loading && !refreshing ? (
+                <View style={{ flex: 1, padding: 20 }}>
+                     <SkeletonList count={3} />
+                </View>
+            ) : (
+                <FlatList
+                    data={activeTab === 'Pending' ? pendingItems : activeTab === 'Mutual' ? mutualItems : sentItems}
+                    keyExtractor={item => item.match_id?.toString() || item.partner_id?.toString()}
+                    renderItem={renderItem}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FDBE01']} />}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ fontFamily: serifFont, color: '#666' }}>No {activeTab} matches found.</Text>
+                        </View>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 }

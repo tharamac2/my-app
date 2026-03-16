@@ -166,6 +166,11 @@ def get_user_full_profile(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    def to_dict(obj):
+        if not obj:
+            return None
+        return {k: v for k, v in obj.__dict__.items() if not k.startswith('_')}
+
     return {
         "id": user.id,
         "email": user.email,
@@ -175,12 +180,12 @@ def get_user_full_profile(
         "is_verified": user.is_verified,
         "created_at": user.created_at,
         "last_login": user.last_login,
-        "profile": user.profile,
-        "details": user.details,
-        "family": user.family,
-        "location": user.location,
-        "photos": user.photos,
-        "subscription": user.subscription
+        "profile": to_dict(user.profile),
+        "details": to_dict(user.details),
+        "family": to_dict(user.family),
+        "location": to_dict(user.location),
+        "photos": [to_dict(p) for p in user.photos] if user.photos else [],
+        "subscription": to_dict(user.subscription)
     }
 
 @router.post("/users/{user_id}/reset-password")

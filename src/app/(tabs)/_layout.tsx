@@ -100,6 +100,20 @@ export default function TabLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="activity-history"
+        options={{
+          href: null,
+          title: 'Activity History',
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          href: null,
+          title: 'Settings',
+        }}
+      />
     </Tabs>
   );
 }

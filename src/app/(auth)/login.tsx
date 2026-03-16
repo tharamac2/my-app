@@ -2,8 +2,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import api from '../services/api';
-import useAuthStore from '../store/authStore';
+import api from '@/services/api';
+import useAuthStore from '@/store/authStore';
 import {
     Dimensions,
     KeyboardAvoidingView,

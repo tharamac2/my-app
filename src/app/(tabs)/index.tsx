@@ -14,8 +14,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Skeleton } from '@/components/SkeletonLoader';
 
 const { width } = Dimensions.get('window');
 
@@ -65,6 +67,8 @@ export default function DiscoverScreen() {
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [likedProfiles, setLikedProfiles] = useState<string[]>([]);
   const [topMatches, setTopMatches] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleToggleLike = async (id: string, e?: any) => {
     if (e && e.stopPropagation) e.stopPropagation();
@@ -94,11 +98,20 @@ export default function DiscoverScreen() {
 
   const fetchFeed = async () => {
     try {
+      setLoading(true);
       const response = await api.get('/discovery/feed');
       setTopMatches(response.data.feed);
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFeed();
+    setRefreshing(false);
   };
 
   const renderTopMatch = ({ item }: { item: any }) => (
@@ -161,7 +174,11 @@ export default function DiscoverScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FDBE01']} />}
+      >
         {/* Header - Image 3 Style */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.push('/(tabs)/profile')}>
@@ -236,15 +253,26 @@ export default function DiscoverScreen() {
           </TouchableOpacity>
         </View>
 
-        <FlatList
-          data={topMatches}
-          renderItem={renderTopMatch}
-          keyExtractor={(item) => item.id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
-          ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
-        />
+        {loading && !refreshing ? (
+          <View style={{ paddingHorizontal: 20, flexDirection: 'row', gap: 15 }}>
+            <Skeleton width={width * 0.85} height={480} borderRadius={25} style={{ marginBottom: 15 }} />
+          </View>
+        ) : (
+          <FlatList
+            data={topMatches}
+            renderItem={renderTopMatch}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingLeft: 20, paddingRight: 20 }}
+            ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
+            ListEmptyComponent={
+              <View style={{ width: width - 40, alignItems: 'center', justifyContent: 'center', height: 200, backgroundColor: '#F9F9F9', borderRadius: 20 }}>
+                <Text style={{ fontFamily: serifFont, color: '#666' }}>No profiles available at the moment.</Text>
+              </View>
+            }
+          />
+        )}
 
 
         {/* Recently Viewed Section */}

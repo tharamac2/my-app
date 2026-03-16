@@ -11,9 +11,11 @@ import {
     Text,
     TouchableOpacity,
     View,
+    RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import api from '../services/api';
+import { SkeletonList } from '@/components/SkeletonLoader';
 
 const { width, height } = Dimensions.get('window');
 
@@ -41,6 +43,19 @@ export default function AllMatchesScreen() {
         };
         fetchMatches();
     }, []);
+
+    const [refreshing, setRefreshing] = useState(false);
+    const onRefresh = async () => {
+        setRefreshing(true);
+        try {
+            const response = await api.get('/discovery/feed');
+            setMatches(response.data.feed);
+        } catch (error) {
+            console.error('Refresh failed:', error);
+        } finally {
+            setRefreshing(false);
+        }
+    };
 
     const handleAction = async (targetId: string, action: string) => {
         try {
@@ -99,8 +114,8 @@ export default function AllMatchesScreen() {
             </View>
 
             {loading ? (
-                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-                    <ActivityIndicator size="large" color="#FDBE01" />
+                <View style={{flex: 1, padding: 20 }}>
+                    <SkeletonList count={3} />
                 </View>
             ) : (
                 <FlatList
@@ -109,6 +124,7 @@ export default function AllMatchesScreen() {
                     keyExtractor={item => item.id.toString()}
                     contentContainerStyle={styles.listContent}
                     showsVerticalScrollIndicator={false}
+                    refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#FDBE01']} />}
                     ListEmptyComponent={
                         <View style={{ alignItems: 'center', marginTop: 50 }}>
                             <Text style={{ fontFamily: serifFont, color: '#666' }}>No new matches found in your location.</Text>

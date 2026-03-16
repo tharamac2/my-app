@@ -3,8 +3,8 @@ import { Colors } from '@/constants/Colors';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
-import api from '../services/api';
-import useAuthStore from '../store/authStore';
+import api from '@/services/api';
+import useAuthStore from '@/store/authStore';
 import {
     Dimensions,
     FlatList,
@@ -159,7 +159,7 @@ export default function RegisterScreen() {
                 email: account.email,
                 full_name: account.name,
                 password: `google_${account.id}_${account.email.split('@')[0]}`, // Secure placeholder
-            }).catch(async (err) => {
+            }).catch(async (err: any) => {
                 // If user already exists, try logging in
                 if (err.response?.status === 409) {
                     return await api.post('/auth/login', {
