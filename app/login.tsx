@@ -51,7 +51,7 @@ export default function LoginScreen() {
     const [otp, setOtp] = useState(['', '', '', '']);
     const otpFields = useRef<Array<TextInput | null>>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const login = useAuthStore((state) => state.login);
+    const login = useAuthStore((state: any) => state.login);
 
     const validateEmail = (text: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text);
     const validateMobile = (text: string) => /^[0-9]{10}$/.test(text);

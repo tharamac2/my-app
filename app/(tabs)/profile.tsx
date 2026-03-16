@@ -5,6 +5,7 @@ import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import api from '../../services/api';
+import useAuthStore from '../../store/authStore';
 
 const { width } = Dimensions.get('window');
 
@@ -52,6 +53,7 @@ const CompletenessRing = ({ size, progress, strokeWidth }: { size: number, progr
 
 export default function ProfileDashboard() {
     const router = useRouter();
+    const user = useAuthStore((state: any) => state.user);
     const [profileData, setProfileData] = useState<any>(null);
 
     useEffect(() => {
@@ -92,7 +94,7 @@ export default function ProfileDashboard() {
                             <View style={styles.profileImageContainer}>
                                 <CompletenessRing size={ringSize} progress={80} strokeWidth={ringStrokeWidth} />
                                 <Image
-                                    source={{ uri: profileData?.photos?.[0]?.photo_url || 'https://via.placeholder.com/150' }}
+                                    source={{ uri: profileData?.photos?.[0]?.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=FDBE01&color=1A1A1A&size=150` }}
                                     style={[styles.profileImage, { width: profileImageSize, height: profileImageSize, borderRadius: profileImageSize / 2 }]}
                                 />
                             </View>
@@ -103,10 +105,10 @@ export default function ProfileDashboard() {
 
                         <View style={styles.profileInfoContainer}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.name}>{profileData?.full_name || 'Loading...'}</Text>
+                                <Text style={styles.name}>{profileData?.full_name || user?.full_name || 'Loading...'}</Text>
                                 <MaterialCommunityIcons name="check-decagram" size={20} color="#0084FF" style={{ marginLeft: 4, marginTop: 4 }} />
                             </View>
-                            <Text style={styles.email}>{profileData?.email || ''}</Text>
+                            <Text style={styles.email}>{profileData?.email || user?.email || ''}</Text>
 
                             <View style={styles.trustBadgeWrapper}>
                                 <View style={styles.trustBadge}>

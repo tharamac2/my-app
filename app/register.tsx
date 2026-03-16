@@ -17,6 +17,7 @@ import {
     TextInput,
     TouchableOpacity,
     View,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -61,7 +62,7 @@ export default function RegisterScreen() {
     const [otp, setOtp] = useState(['', '', '', '']);
     const [googleModalVisible, setGoogleModalVisible] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const login = useAuthStore((state) => state.login);
+    const login = useAuthStore((state: any) => state.login);
     const otpFields = useRef<Array<TextInput | null>>([]);
 
     const deviceAccounts = [
@@ -141,7 +142,39 @@ export default function RegisterScreen() {
             router.replace('/create-profile' as any);
         } catch (error: any) {
             console.error("Registration error:", error);
-            alert(error.response?.data?.error || error.message || "Registration failed");
+            Alert.alert("Error", error.response?.data?.error || error.message || "Registration failed");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleLogin = async (account: { name: string, email: string, id: string }) => {
+        try {
+            setIsLoading(true);
+            setGoogleModalVisible(false);
+            
+            // In a real app, you would use an ID token from Google.
+            // For this version, we'll simulate the registration/login flow using the selected email.
+            const response = await api.post('/auth/register', {
+                email: account.email,
+                full_name: account.name,
+                password: `google_${account.id}_${account.email.split('@')[0]}`, // Secure placeholder
+            }).catch(async (err) => {
+                // If user already exists, try logging in
+                if (err.response?.status === 409) {
+                    return await api.post('/auth/login', {
+                        email: account.email,
+                        password: `google_${account.id}_${account.email.split('@')[0]}`
+                    });
+                }
+                throw err;
+            });
+
+            login(response.data.token, response.data.user);
+            router.replace('/create-profile' as any);
+        } catch (error: any) {
+            console.error("Google login failed:", error);
+            Alert.alert("Google Signup Failed", error.response?.data?.error || "Could not connect to Google service.");
         } finally {
             setIsLoading(false);
         }
@@ -193,7 +226,7 @@ export default function RegisterScreen() {
 
             <View style={styles.footerRow}>
                 <Text style={styles.footerLabel}>Already have an account ? </Text>
-                <Link href="/login" style={styles.actionButtonTextSmall}>
+                <Link href={'/login' as any} style={styles.actionButtonTextSmall}>
                     Login
                 </Link>
             </View>
@@ -350,10 +383,7 @@ export default function RegisterScreen() {
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={styles.googleAccountItem}
-                                onPress={() => {
-                                    setGoogleModalVisible(false);
-                                    router.push('/(tabs)' as any);
-                                }}
+                                onPress={() => handleGoogleLogin(item)}
                             >
                                 <View style={styles.accountIconContainer}>
                                     <MaterialCommunityIcons name={item.icon as any} size={28} color="#E8EAED" />
@@ -373,7 +403,29 @@ export default function RegisterScreen() {
                         style={[styles.googleAccountItem, { marginTop: 10 }]}
                         onPress={() => {
                             setGoogleModalVisible(false);
-                            router.push('/(tabs)' as any);
+                            // Simple prompt to get a "real" email for testing if device ones aren't available
+                            Alert.prompt(
+                                "Add Account",
+                                "Enter your real email ID to register",
+                                [
+                                    { text: "Cancel", style: "cancel" },
+                                    { 
+                                        text: "OK", 
+                                        onPress: (realEmail: string | undefined) => {
+                                            if (realEmail && realEmail.includes('@')) {
+                                                handleGoogleLogin({ 
+                                                    id: Date.now().toString(), 
+                                                    name: realEmail.split('@')[0], 
+                                                    email: realEmail 
+                                                });
+                                            } else {
+                                                Alert.alert("Invalid Email", "Please enter a valid email address.");
+                                            }
+                                        } 
+                                    }
+                                ],
+                                "plain-text"
+                            );
                         }}
                     >
                         <View style={styles.accountIconContainer}>

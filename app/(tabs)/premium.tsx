@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F9F9F9',
     },
     scrollContent: {
-        paddingBottom: 40,
+        paddingBottom: 120,
     },
     heroSection: {
         alignItems: 'center',

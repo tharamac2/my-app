@@ -80,5 +80,16 @@ def update_details():
         if 'nakshatra' in data: user.astrology.nakshatra = data['nakshatra']
         if 'rasi' in data: user.astrology.rasi = data['rasi']
     
+    # Update profile photos
+    if 'profile_photos' in data and data['profile_photos']:
+        UserPhoto.query.filter_by(user_id=user.id).delete()
+        for i, photo_uri in enumerate(data['profile_photos']):
+            new_photo = UserPhoto(
+                user_id=user.id,
+                photo_url=photo_uri,
+                is_primary=(i == 0)
+            )
+            db.session.add(new_photo)
+
     db.session.commit()
     return jsonify({"message": "Profile updated successfully"}), 200

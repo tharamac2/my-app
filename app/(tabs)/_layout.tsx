@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { Colors } from '@/constants/Colors';
@@ -25,8 +25,8 @@ export default function TabLayout() {
         tabBarStyle: {
           backgroundColor: '#FDBE01',
           borderTopWidth: 0,
-          height: 65,
-          paddingBottom: 10,
+          height: Platform.OS === 'ios' ? 100 : 90,
+          paddingBottom: Platform.OS === 'ios' ? 40 : 35,
           paddingTop: 10,
           position: 'absolute',
           bottom: 0,

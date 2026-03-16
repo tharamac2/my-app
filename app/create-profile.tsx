@@ -181,11 +181,11 @@ export default function CreateProfileScreen() {
 
     const OPTIONS = {
         religion: ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Other'],
-        community: ['Brahmins', 'Rajputs', 'Agarwals', 'Jats', 'Marathas', 'Kayasthas', 'Other'],
+        community: ['Mudhaliyar'],
         livingIn: ['India', 'USA', 'UK', 'Canada', 'Australia', 'Other'],
         state: ['Andhra Pradesh', 'Tamil Nadu', 'Karnataka', 'Maharashtra', 'Delhi', 'Uttar Pradesh', 'Other'],
         city: ['Mumbai', 'Chennai', 'Bangalore', 'Delhi', 'Hyderabad', 'Pune', 'Other'],
-        subCommunity: ['Generic', 'Special', 'Traditional', 'Modern', 'Other'],
+        subCommunity: ['Agamudayar', 'Sengunthar', 'Thondaimandala Saiva', 'Thuluva Vellalar', 'Isai Vellalar', 'Karuneegar', 'Veerakodi Vellalar', 'Other'],
         maritalStatus: ['Never Married', 'Divorced', 'Widowed', 'Awaiting Divorce'],
         height: ["4'5\"", "4'10\"", "5'0\"", "5'2\"", "5'5\"", "5'8\"", "6'0\"", "6'2\"", "6'5\""],
         weight: ['40 kg', '50 kg', '60 kg', '70 kg', '80 kg', '90 kg', '100 kg'],
@@ -236,7 +236,8 @@ export default function CreateProfileScreen() {
                 profession: worksAs,
                 income: income,
                 nakshatra: star,
-                rasi: zodiac
+                rasi: zodiac,
+                profile_photos: profileImages.filter(img => img !== null)
             });
             setStep('success');
         } catch (error: any) {
