@@ -27,24 +27,6 @@ const serifFont = Platform.select({
 
 const FILTER_CHIPS = ['New Matches', 'Nearby', 'Premium', 'Same Profession', 'Online Now'];
 
-const DUMMY_RECENT = [
-  {
-    id: 'r1',
-    name: 'Riya Shibu',
-    age: 26,
-    profession: 'Software Professional ....',
-    location: 'Chennai, Tamil Nadu',
-    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-  },
-  {
-    id: 'r2',
-    name: 'Anjali Desai',
-    age: 27,
-    profession: 'Architect',
-    location: 'Delhi, India',
-    imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-  },
-];
 
 const SUBSCRIPTION_PLANS = [
   {
@@ -126,7 +108,7 @@ export default function DiscoverScreen() {
         style={styles.topMatchCard}
         onPress={() => router.push({
           pathname: '/profile-detail',
-          params: { name: item.full_name, age: item.age?.toString() }
+          params: { id: item.id.toString() }
         })}
       >
         <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/400' }} style={styles.topMatchImage} />
@@ -280,19 +262,19 @@ export default function DiscoverScreen() {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.recentScroll}
         >
-          {DUMMY_RECENT.map((item) => (
+          {topMatches.slice(0, 5).reverse().map((item, index) => (
             <TouchableOpacity
-              key={item.id}
+              key={'recent_' + index}
               style={styles.recentCard}
               onPress={() => router.push({
                 pathname: '/profile-detail',
-                params: { name: item.name, age: item.age.toString() }
+                params: { id: item.id.toString() }
               })}
             >
-              <Image source={{ uri: item.imageUrl }} style={styles.recentImage} />
+              <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/150' }} style={styles.recentImage} />
               <View style={styles.recentInfo}>
-                <Text style={styles.recentName}>{item.name}, {item.age}</Text>
-                <Text style={styles.recentDetails} numberOfLines={1}>{item.profession}</Text>
+                <Text style={styles.recentName}>{item.full_name}, {item.age || '-'}</Text>
+                <Text style={styles.recentDetails} numberOfLines={1}>{item.profession || 'Professional'}</Text>
                 <Text style={styles.recentLocation}>{item.location}</Text>
               </View>
             </TouchableOpacity>

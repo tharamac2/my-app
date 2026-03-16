@@ -32,51 +32,7 @@ interface Notification {
 }
 
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-    {
-        id: '1',
-        type: 'request',
-        message: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-        timestamp: 'Last Wednesday at 9.42 am',
-        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-        status: 'unread',
-    },
-    {
-        id: '2',
-        type: 'welcome',
-        title: 'Welcome ! user',
-        message: 'Lorem Ipsum is simply dummy text of the',
-        timestamp: 'Last monday at 9.42 am',
-        imageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=1061&auto=format&fit=crop',
-        status: 'unread',
-    },
-    {
-        id: '3',
-        type: 'welcome',
-        title: 'Welcome ! user',
-        message: 'Lorem Ipsum is simply dummy text of the',
-        timestamp: 'Last monday at 9.42 am',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-        status: 'unread',
-    },
-    {
-        id: '4',
-        type: 'welcome',
-        title: 'Welcome ! user',
-        message: 'Lorem Ipsum is simply dummy text of the',
-        timestamp: 'Last monday at 9.42 am',
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-        status: 'unread',
-    },
-    {
-        id: '5',
-        type: 'request',
-        message: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
-        timestamp: 'Last Wednesday at 9.42 am',
-        imageUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1000&auto=format&fit=crop',
-        status: 'unread',
-    },
-];
+const INITIAL_NOTIFICATIONS: Notification[] = [];
 
 export default function NotificationsScreen() {
     const router = useRouter();

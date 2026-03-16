@@ -1,7 +1,8 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     FlatList,
     Image,
@@ -12,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import api from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -21,57 +23,39 @@ const serifFont = Platform.select({
     default: 'serif',
 });
 
-const RECENTLY_VIEWED = [
-    {
-        id: '1',
-        name: 'Riya Shibu',
-        age: 26,
-        profession: 'Software Professional',
-        location: 'Chennai, Tamil Nadu',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'Riya Shibu',
-        age: 26,
-        profession: 'Software Professional',
-        location: 'Chennai, Tamil Nadu',
-        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'Riya Shibu',
-        age: 26,
-        profession: 'Software Professional',
-        location: 'Chennai, Tamil Nadu',
-        imageUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?q=80&w=1287&auto=format&fit=crop',
-    },
-    {
-        id: '4',
-        name: 'Riya Shibu',
-        age: 26,
-        profession: 'Software Professional',
-        location: 'Chennai, Tamil Nadu',
-        imageUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1000&auto=format&fit=crop',
-    },
-];
-
 export default function RecentlyViewedScreen() {
     const router = useRouter();
+    const [matches, setMatches] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const renderRecentCard = ({ item }: { item: typeof RECENTLY_VIEWED[0] }) => (
+    useEffect(() => {
+        const fetchMatches = async () => {
+            try {
+                const response = await api.get('/discovery/feed');
+                setMatches(response.data.feed.reverse()); // Just to look slightly different
+            } catch (error) {
+                console.error('Failed to load matches:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMatches();
+    }, []);
+
+    const renderRecentCard = ({ item }: { item: any }) => (
         <TouchableOpacity
             style={styles.card}
             onPress={() => router.push({
                 pathname: '/profile-detail',
-                params: { name: item.name, age: item.age.toString() }
+                params: { id: item.id.toString() }
             })}
         >
-            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+            <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/150' }} style={styles.cardImage} />
             <View style={styles.cardInfo}>
-                <Text style={styles.nameText}>{item.name}, {item.age}</Text>
-                <Text style={styles.professionText}>{item.profession} ....</Text>
+                <Text style={styles.nameText}>{item.full_name}, {item.age || '-'}</Text>
+                <Text style={styles.professionText}>{item.profession || 'Professional'} ....</Text>
                 <Text style={styles.locationText}>{item.location}</Text>
+
             </View>
             <TouchableOpacity style={styles.heartBtn}>
                 <Ionicons name="heart" size={26} color="#FDBE01" />
@@ -87,13 +71,24 @@ export default function RecentlyViewedScreen() {
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={RECENTLY_VIEWED}
-                renderItem={renderRecentCard}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {loading ? (
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <ActivityIndicator size="large" color="#FDBE01" />
+                </View>
+            ) : (
+                <FlatList
+                    data={matches}
+                    renderItem={renderRecentCard}
+                    keyExtractor={item => item.id.toString()}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ fontFamily: serifFont, color: '#666' }}>No recently viewed profiles.</Text>
+                        </View>
+                    }
+                />
+            )}
 
             {/* Floating Bottom Tab Bar Mockup */}
             <View style={styles.bottomTab}>

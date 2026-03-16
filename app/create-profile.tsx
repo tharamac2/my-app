@@ -58,6 +58,22 @@ export default function CreateProfileScreen() {
     const [livingIn, setLivingIn] = useState('India');
     const [state, setState] = useState('');
     const [city, setCity] = useState('');
+
+    React.useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const res = await api.get('/profile/me');
+                if (res.data?.full_name) {
+                    const parts = res.data.full_name.trim().split(' ');
+                    setFirstName(parts[0] || '');
+                    setLastName(parts.slice(1).join(' ') || '');
+                }
+            } catch (err) {
+                console.error("Failed to fetch initial profile data:", err);
+            }
+        };
+        fetchUserData();
+    }, []);
     const [subCommunity, setSubCommunity] = useState('');
     const [maritalStatus, setMaritalStatus] = useState('');
     const [height, setHeight] = useState('');

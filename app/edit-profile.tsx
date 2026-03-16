@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import api from '../services/api';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -17,17 +18,42 @@ export default function EditProfileScreen() {
     const router = useRouter();
 
     // Form State
-    const [name, setName] = useState('Prisha Mirha');
-    const [bio, setBio] = useState('Software professional who loves traveling and filter coffee. Looking for someone with similar values.');
-    const [phone, setPhone] = useState('+91 98765 43210');
-    const [email, setEmail] = useState('prisha.m@example.com');
-    const [location, setLocation] = useState('Chennai, Tamil Nadu');
-    const [profession, setProfession] = useState('Software Engineer');
-    const [education, setEducation] = useState('B.Tech in Computer Science');
+    const [name, setName] = useState('');
+    const [bio, setBio] = useState('');
+    const [phone, setPhone] = useState('');
+    const [email, setEmail] = useState('');
+    const [location, setLocation] = useState('');
+    const [profession, setProfession] = useState('');
+    const [education, setEducation] = useState('');
 
-    const handleSave = () => {
-        // Implement save logic here
-        router.back();
+    useEffect(() => {
+        api.get('/profile/me').then((res: any) => {
+            const d = res.data;
+            setName(d.full_name || '');
+            setBio(d.bio || '');
+            setPhone(d.phone || '');
+            setEmail(d.email || '');
+            setLocation(d.location || '');
+            setProfession(d.details?.profession || '');
+            setEducation(d.details?.education || '');
+        }).catch((err: any) => console.log(err));
+    }, []);
+
+    const handleSave = async () => {
+        try {
+            await api.put('/profile/me/details', {
+                full_name: name,
+                bio: bio,
+                phone: phone,
+                location: location,
+                profession: profession,
+                education: education
+            });
+            router.back();
+        } catch (error) {
+            console.error("Failed to update profile", error);
+            alert("Could not update profile details. Please try again.");
+        }
     };
 
     return (

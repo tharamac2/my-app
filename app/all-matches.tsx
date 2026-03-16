@@ -1,7 +1,8 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
+    ActivityIndicator,
     Dimensions,
     FlatList,
     Image,
@@ -12,6 +13,7 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import api from '../services/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,46 +23,48 @@ const serifFont = Platform.select({
     default: 'serif',
 });
 
-const ALL_MATCHES = [
-    {
-        id: '1',
-        name: 'Prisha Mirha',
-        age: 28,
-        profession: 'Software Professional',
-        degree: 'Graduate',
-        location: 'Dwaraka, New Delhi',
-        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1288&auto=format&fit=crop',
-    },
-    {
-        id: '2',
-        name: 'Sowmiya',
-        age: 25,
-        profession: 'Software Professional',
-        degree: 'Graduate',
-        location: 'Dindigul, Tamilnadu',
-        imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1364&auto=format&fit=crop',
-    },
-    {
-        id: '3',
-        name: 'Riya Shibu',
-        age: 26,
-        profession: 'Software Professional',
-        degree: 'Post Graduate',
-        location: 'Chennai, Tamil Nadu',
-        imageUrl: 'https://images.unsplash.com/photo-1524250502761-1ac6f2e30d43?q=80&w=1000&auto=format&fit=crop',
-    },
-];
-
 export default function AllMatchesScreen() {
     const router = useRouter();
+    const [matches, setMatches] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const renderMatchCard = ({ item }: { item: typeof ALL_MATCHES[0] }) => (
-        <View style={styles.card}>
-            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+    useEffect(() => {
+        const fetchMatches = async () => {
+            try {
+                const response = await api.get('/discovery/feed');
+                setMatches(response.data.feed);
+            } catch (error) {
+                console.error('Failed to load matches:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchMatches();
+    }, []);
+
+    const handleAction = async (targetId: string, action: string) => {
+        try {
+            await api.post('/matches/action', { target_id: parseInt(targetId), action });
+            // Optionally, we could remove them from the list if they are liked/passed
+        } catch (e) {
+            console.error('Action failed:', e);
+        }
+    };
+
+    const renderMatchCard = ({ item }: { item: any }) => (
+        <TouchableOpacity 
+            style={styles.card}
+            onPress={() => router.push({
+                pathname: '/profile-detail',
+                params: { id: item.id.toString() }
+            })}
+            activeOpacity={0.9}
+        >
+            <Image source={{ uri: item.photo_url || 'https://via.placeholder.com/400' }} style={styles.cardImage} />
 
             {/* Side Action Buttons */}
             <View style={styles.sideActions}>
-                <TouchableOpacity style={styles.actionBtn}>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => handleAction(item.id.toString(), 'like')}>
                     <Ionicons name="heart" size={24} color="#FDBE01" />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn}>
@@ -70,7 +74,7 @@ export default function AllMatchesScreen() {
                     style={styles.actionBtn}
                     onPress={() => router.push({
                         pathname: '/chat-detail',
-                        params: { name: item.name, imageUrl: item.imageUrl }
+                        params: { name: item.full_name, imageUrl: item.photo_url }
                     })}
                 >
                     <Ionicons name="chatbubble" size={24} color="#FDBE01" />
@@ -79,11 +83,11 @@ export default function AllMatchesScreen() {
 
             {/* Bottom Info Overlay */}
             <View style={styles.infoOverlay}>
-                <Text style={styles.nameText}>{item.name}, {item.age}</Text>
-                <Text style={styles.professionText}>{item.profession} - {item.degree}</Text>
+                <Text style={styles.nameText}>{item.full_name}, {item.age || '-'}</Text>
+                <Text style={styles.professionText}>{item.profession || 'Professional'} - {item.education || ''}</Text>
                 <Text style={styles.locationText}>{item.location}</Text>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 
     return (
@@ -94,13 +98,24 @@ export default function AllMatchesScreen() {
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={ALL_MATCHES}
-                renderItem={renderMatchCard}
-                keyExtractor={item => item.id}
-                contentContainerStyle={styles.listContent}
-                showsVerticalScrollIndicator={false}
-            />
+            {loading ? (
+                <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                    <ActivityIndicator size="large" color="#FDBE01" />
+                </View>
+            ) : (
+                <FlatList
+                    data={matches}
+                    renderItem={renderMatchCard}
+                    keyExtractor={item => item.id.toString()}
+                    contentContainerStyle={styles.listContent}
+                    showsVerticalScrollIndicator={false}
+                    ListEmptyComponent={
+                        <View style={{ alignItems: 'center', marginTop: 50 }}>
+                            <Text style={{ fontFamily: serifFont, color: '#666' }}>No new matches found in your location.</Text>
+                        </View>
+                    }
+                />
+            )}
 
             {/* Floating Bottom Tab Bar Mockup */}
             <View style={styles.bottomTab}>

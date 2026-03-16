@@ -14,14 +14,14 @@ export default function PartnerPreferencesScreen() {
     const router = useRouter();
 
     // Dummy State for Preferences
-    const [ageRange, setAgeRange] = useState('24 - 29 Years');
-    const [heightRange, setHeightRange] = useState('5\'2" - 5\'8"');
-    const [maritalStatus, setMaritalStatus] = useState('Never Married');
-    const [religion, setReligion] = useState('Hindu');
-    const [caste, setCaste] = useState('Any');
-    const [education, setEducation] = useState('Bachelors, Masters');
-    const [profession, setProfession] = useState('Software, Engineering, Medical');
-    const [location, setLocation] = useState('Chennai, Bangalore');
+    const [ageRange, setAgeRange] = useState('');
+    const [heightRange, setHeightRange] = useState('');
+    const [maritalStatus, setMaritalStatus] = useState('');
+    const [religion, setReligion] = useState('');
+    const [caste, setCaste] = useState('');
+    const [education, setEducation] = useState('');
+    const [profession, setProfession] = useState('');
+    const [location, setLocation] = useState('');
 
     const handleSave = () => {
         // Implement save logic here

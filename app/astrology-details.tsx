@@ -17,13 +17,13 @@ export default function AstrologyDetailsScreen() {
     const router = useRouter();
 
     // Astro State
-    const [nakshatra, setNakshatra] = useState('Bharani');
-    const [rasi, setRasi] = useState('Mesha');
-    const [padam, setPadam] = useState('2');
-    const [gothram, setGothram] = useState('Siva');
-    const [dob, setDob] = useState('14 Aug 1996');
-    const [timeOfBirth, setTimeOfBirth] = useState('10:30 AM');
-    const [placeOfBirth, setPlaceOfBirth] = useState('Chennai');
+    const [nakshatra, setNakshatra] = useState('');
+    const [rasi, setRasi] = useState('');
+    const [padam, setPadam] = useState('');
+    const [gothram, setGothram] = useState('');
+    const [dob, setDob] = useState('');
+    const [timeOfBirth, setTimeOfBirth] = useState('');
+    const [placeOfBirth, setPlaceOfBirth] = useState('');
 
     const handleSave = () => {
         // In a real app, this would ping the `/api/matches/compatibility` logic 
