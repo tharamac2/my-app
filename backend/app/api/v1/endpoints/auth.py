@@ -60,33 +60,44 @@ def register_user(
             detail="The user with this email already exists in the system.",
         )
     
-    db_obj = User(
-        email=user_in.email,
-        password_hash=security.get_password_hash(user_in.password),
-        full_name=user_in.full_name,
-        phone=user_in.phone
-    )
-    db.add(db_obj)
-    db.commit()
-    db.refresh(db_obj)
-
     try:
-        # Log activity
-        activity_service.log(db, db_obj.id, "registration", "User registered a new account")
+        db_obj = User(
+            email=user_in.email,
+            password_hash=security.get_password_hash(user_in.password),
+            full_name=user_in.full_name,
+            phone=user_in.phone
+        )
+        db.add(db_obj)
+        db.commit()
+        db.refresh(db_obj)
+        
+        # Log activity in a separate block to not break registration
+        try:
+            activity_service.log(db, db_obj.id, "registration", "User registered a new account")
+        except Exception:
+            pass
+
+        # Generate token
+        access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        token = security.create_access_token(
+            db_obj.id, expires_delta=access_token_expires
+        )
+
+        return {
+            "user": db_obj,
+            "token": token
+        }
     except Exception as e:
-        # Prevent registration failure if activity logging fails
-        pass
-
-    # Generate token
-    access_token_expires = timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    token = security.create_access_token(
-        db_obj.id, expires_delta=access_token_expires
-    )
-
-    return {
-        "user": db_obj,
-        "token": token
-    }
+        db.rollback()
+        if "UNIQUE constraint failed" in str(e) or "Duplicate entry" in str(e):
+            raise HTTPException(
+                status_code=400,
+                detail="A user with this email or phone already exists.",
+            )
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal registration error: {str(e)}"
+        )
 
 @router.get("/me", response_model=UserOut)
 def read_user_me(

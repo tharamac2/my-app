@@ -76,15 +76,25 @@ export default function LoginScreen() {
         if (valid) {
             try {
                 setIsLoading(true);
-                const response = await api.post('/auth/login', {
-                    email,
-                    password
+                
+                const formData = new URLSearchParams();
+                formData.append('username', email);
+                formData.append('password', password);
+
+                const response = await api.post('/auth/login/access-token', formData.toString(), {
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
                 });
-                login(response.data.token, response.data.user);
+
+                // Get user details
+                const meRes = await api.get('/auth/me', {
+                    headers: { Authorization: `Bearer ${response.data.access_token}` }
+                });
+
+                login(response.data.access_token, meRes.data);
                 router.replace('/(tabs)' as any);
             } catch (error: any) {
                 console.error(error);
-                setPasswordError(error.response?.data?.error || 'Failed to login');
+                setPasswordError(error.response?.data?.detail || error.response?.data?.error || 'Failed to login');
             } finally {
                 setIsLoading(false);
             }

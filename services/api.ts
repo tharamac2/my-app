@@ -7,7 +7,7 @@ const debuggerHost = Constants.expoConfig?.hostUri;
 const localIp = debuggerHost?.split(':')[0] || '192.168.0.4';
 
 const API_IP = Platform.OS === 'android' && !debuggerHost ? '10.0.2.2' : localIp;
-const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:5000/api' : `http://${API_IP}:5000/api`;
+const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:8000/api/v1' : `http://${API_IP}:8000/api/v1`;
 
 const api = axios.create({
     baseURL: BASE_URL,
@@ -23,17 +23,23 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+        console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`);
         return config;
     },
     (error) => {
+        console.error(`[API Request Error]`, error);
         return Promise.reject(error);
     }
 );
 
 // Response interceptor to handle 401 Unauthorized globally
 api.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        console.log(`[API Response] ${response.status} ${response.config.url}`);
+        return response;
+    },
     (error) => {
+        console.error(`[API Response Error] ${error.config?.url}`, error.message, error.response?.data);
         if (error.response?.status === 401) {
             // Token expired or invalid
             const logout = useAuthStore.getState().logout;

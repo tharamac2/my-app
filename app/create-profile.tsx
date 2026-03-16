@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
+import { Country, State, City } from 'country-state-city';
 import api from '../services/api';
 import {
     Alert,
@@ -58,6 +59,8 @@ export default function CreateProfileScreen() {
     const [livingIn, setLivingIn] = useState('India');
     const [state, setState] = useState('');
     const [city, setCity] = useState('');
+    const [countryCode, setCountryCode] = useState('IN');
+    const [stateCode, setStateCode] = useState('');
 
     React.useEffect(() => {
         const fetchUserData = async () => {
@@ -142,8 +145,28 @@ export default function CreateProfileScreen() {
         switch (pickerTarget) {
             case 'religion': setReligion(value); break;
             case 'community': setCommunity(value); break;
-            case 'livingIn': setLivingIn(value); break;
-            case 'state': setState(value); break;
+            case 'livingIn': 
+                setLivingIn(value); 
+                const selectedCountry = Country.getAllCountries().find(c => c.name === value);
+                if (selectedCountry) {
+                    setCountryCode(selectedCountry.isoCode);
+                } else {
+                    setCountryCode('');
+                }
+                setState('');
+                setStateCode('');
+                setCity('');
+                break;
+            case 'state': 
+                setState(value); 
+                const selectedState = State.getStatesOfCountry(countryCode).find(s => s.name === value);
+                if (selectedState) {
+                    setStateCode(selectedState.isoCode);
+                } else {
+                    setStateCode('');
+                }
+                setCity('');
+                break;
             case 'city': setCity(value); break;
             case 'subCommunity': setSubCommunity(value); break;
             case 'maritalStatus': setMaritalStatus(value); break;
@@ -198,9 +221,9 @@ export default function CreateProfileScreen() {
     const OPTIONS = {
         religion: ['Hindu', 'Muslim', 'Christian', 'Sikh', 'Jain', 'Other'],
         community: ['Mudhaliyar'],
-        livingIn: ['India', 'USA', 'UK', 'Canada', 'Australia', 'Other'],
-        state: ['Andhra Pradesh', 'Tamil Nadu', 'Karnataka', 'Maharashtra', 'Delhi', 'Uttar Pradesh', 'Other'],
-        city: ['Mumbai', 'Chennai', 'Bangalore', 'Delhi', 'Hyderabad', 'Pune', 'Other'],
+        livingIn: Country.getAllCountries().map(c => c.name),
+        state: countryCode ? State.getStatesOfCountry(countryCode).map(s => s.name) : [],
+        city: stateCode ? City.getCitiesOfState(countryCode, stateCode).map(c => c.name) : [],
         subCommunity: ['Agamudayar', 'Sengunthar', 'Thondaimandala Saiva', 'Thuluva Vellalar', 'Isai Vellalar', 'Karuneegar', 'Veerakodi Vellalar', 'Other'],
         maritalStatus: ['Never Married', 'Divorced', 'Widowed', 'Awaiting Divorce'],
         height: ["4'5\"", "4'10\"", "5'0\"", "5'2\"", "5'5\"", "5'8\"", "6'0\"", "6'2\"", "6'5\""],
@@ -239,7 +262,7 @@ export default function CreateProfileScreen() {
     const submitProfileDetails = async () => {
         try {
             const locationStr = [city, state, livingIn].filter(Boolean).join(', ');
-            await api.put('/profile/me/details', {
+            await api.put('/profile/me/all', {
                 full_name: `${firstName} ${lastName}`.trim(),
                 gender: gender,
                 dob: dob ? dob.toISOString() : null,
@@ -258,7 +281,7 @@ export default function CreateProfileScreen() {
             setStep('success');
         } catch (error: any) {
             console.error('Error submitting profile:', error);
-            Alert.alert('Error', error.response?.data?.error || 'Could not save profile details');
+            Alert.alert('Error', error.response?.data?.detail || error.response?.data?.error || 'Could not save profile details');
         }
     };
 
