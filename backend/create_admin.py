@@ -1,34 +1,21 @@
 from app.db.session import SessionLocal
-from app.models.user import User, UserProfile, UserDetail, FamilyDetail, LocationDetail, UserPhoto
-from app.models.social import Match, Favorite, Message, Report, Block
-from app.models.billing import Subscription, Payment
-from app.models.notification import Notification
+from app.models.user import User
+from app.models.billing import Subscription
+from app.models.admin_model import Admin
 from app.core.security import get_password_hash
-import uuid
-
-def create_first_admin():
-    db = SessionLocal()
-    admin_email = "admin@ratanmatrimony.com"
-    user = db.query(User).filter(User.email == admin_email).first()
-    if not user:
-        user = User(
-            id=str(uuid.uuid4()),
-            email=admin_email,
-            password_hash=get_password_hash("admin123"),
-            full_name="System Admin",
-            role="admin",
-            is_active=True,
-            is_verified=True
-        )
-        db.add(user)
-        db.commit()
-        print(f"Admin user created: {admin_email} / admin123")
-    else:
-        # Update to make sure it is admin
-        user.role = "admin"
-        user.password_hash = get_password_hash("admin123")
-        db.commit()
-        print(f"Admin user updated: {admin_email} / admin123")
-
-if __name__ == "__main__":
-    create_first_admin()
+db = SessionLocal()
+email = 'admin@ratanmatrimony.com'
+password = 'AdminPassword123!'
+admin_user = db.query(User).filter(User.email == email).first()
+if not admin_user:
+    admin_user = User(email=email, password_hash=get_password_hash(password), full_name='Super Admin', role='admin', is_verified=True, is_active=True)
+    db.add(admin_user)
+    db.commit()
+    print('Admin created successfully.')
+else:
+    admin_user.password_hash = get_password_hash(password)
+    admin_user.role = 'admin'
+    admin_user.is_verified = True
+    admin_user.is_active = True
+    db.commit()
+    print('Admin updated successfully.')

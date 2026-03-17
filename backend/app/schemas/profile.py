@@ -86,3 +86,20 @@ class ProfileCompleteOut(BaseModel):
     location: Optional[LocationDetailOut] = None
     class Config:
         from_attributes = True
+
+class CompleteProfileSetup(BaseModel):
+    full_name: Optional[str] = None
+    gender: Optional[str] = None
+    dob: Optional[date] = None
+    location: Optional[str] = None
+    height: Optional[str] = None
+    weight: Optional[str] = None
+    religion: Optional[str] = None
+    caste: Optional[str] = None
+    education: Optional[str] = None
+    profession: Optional[str] = None
+    income: Optional[str] = None
+    nakshatra: Optional[str] = None
+    rasi: Optional[str] = None
+    profile_photos: Optional[List[str]] = None
+
