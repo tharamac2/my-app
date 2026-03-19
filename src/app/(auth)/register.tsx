@@ -142,7 +142,8 @@ export default function RegisterScreen() {
             router.replace('/create-profile' as any);
         } catch (error: any) {
             console.error("Registration error:", error);
-            Alert.alert("Error", error.response?.data?.error || error.message || "Registration failed");
+            const msg = error.response?.data?.detail || error.response?.data?.error || error.message || "Registration failed";
+            Alert.alert("Error", msg);
         } finally {
             setIsLoading(false);
         }
@@ -153,11 +154,23 @@ export default function RegisterScreen() {
             setIsLoading(true);
             setGoogleModalVisible(false);
             
-            // In a real app, you would use an ID token from Google.
-            // For this version, we'll simulate the registration/login flow using the selected email.
-            const response = await api.post('/auth/register', {
+            const passwordStr = `google_${account.id}_${account.email.split('@')[0]}`;
+            
+            let isLogin = false;
+            let response = await api.post('/auth/register', {
                 email: account.email,
                 full_name: account.name,
+<<<<<<< HEAD:app/register.tsx
+                password: passwordStr,
+            }).catch(async (err) => {
+                if (err.response?.status === 409 || err.response?.status === 400) {
+                    isLogin = true;
+                    const formData = new URLSearchParams();
+                    formData.append('username', account.email);
+                    formData.append('password', passwordStr);
+                    return await api.post('/auth/login/access-token', formData.toString(), {
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+=======
                 password: `google_${account.id}_${account.email.split('@')[0]}`, // Secure placeholder
             }).catch(async (err: any) => {
                 // If user already exists, try logging in
@@ -165,16 +178,24 @@ export default function RegisterScreen() {
                     return await api.post('/auth/login', {
                         email: account.email,
                         password: `google_${account.id}_${account.email.split('@')[0]}`
+>>>>>>> 792b4a3eb2f025a37316251387dd7e9d5b5cfdf7:src/app/(auth)/register.tsx
                     });
                 }
                 throw err;
             });
 
-            login(response.data.token, response.data.user);
+            const token = isLogin ? response.data.access_token : response.data.token;
+            
+            const meRes = await api.get('/auth/me', {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            login(token, meRes.data);
             router.replace('/create-profile' as any);
         } catch (error: any) {
             console.error("Google login failed:", error);
-            Alert.alert("Google Signup Failed", error.response?.data?.error || "Could not connect to Google service.");
+            const msg = error.response?.data?.detail || error.response?.data?.error || error.message || "Could not connect to Google service.";
+            Alert.alert("Google Signup Failed", msg);
         } finally {
             setIsLoading(false);
         }

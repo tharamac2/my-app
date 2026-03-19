@@ -17,6 +17,24 @@ from app.schemas.profile import (
 )
 from app.services import cloudinary as cloudinary_service
 
+from pydantic import BaseModel
+
+class ProfileUpdateAll(BaseModel):
+    full_name: str | None = None
+    gender: str | None = None
+    dob: str | None = None
+    location: str | None = None
+    height: str | None = None
+    weight: str | None = None
+    religion: str | None = None
+    caste: str | None = None
+    education: str | None = None
+    profession: str | None = None
+    income: str | None = None
+    nakshatra: str | None = None
+    rasi: str | None = None
+    profile_photos: list[str] | None = None
+
 router = APIRouter()
 
 @router.get("/me", response_model=ProfileCompleteOut)
@@ -67,6 +85,75 @@ def update_profile_details(
     for field, value in update_data.items():
         setattr(details, field, value)
     
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.put("/me/all", response_model=ProfileCompleteOut)
+def update_profile_all(
+    *,
+    db: Session = Depends(deps.get_db),
+    data: ProfileUpdateAll,
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Update everything from a single large JSON payload.
+    """
+    if data.full_name:
+        current_user.full_name = data.full_name
+
+    # Profile
+    profile = current_user.profile
+    if not profile:
+        profile = UserProfile(user_id=current_user.id)
+        db.add(profile)
+    
+    if data.gender: profile.gender = data.gender
+    if data.dob:
+        from datetime import datetime
+        try:
+            profile.dob = datetime.fromisoformat(data.dob.replace('Z', '+00:00')).date()
+        except Exception:
+            pass
+    if data.religion: profile.religion = data.religion
+    if data.caste: profile.caste = data.caste
+
+    # Details
+    details = current_user.details
+    if not details:
+        details = UserDetail(user_id=current_user.id)
+        db.add(details)
+
+    if data.height: details.height = data.height
+    if data.weight: details.weight = data.weight
+    if data.education: details.education = data.education
+    if data.profession: details.occupation = data.profession
+    if data.income: details.annual_income = data.income
+
+    # Location
+    if data.location:
+        loc = current_user.location
+        if not loc:
+            loc = LocationDetail(user_id=current_user.id)
+            db.add(loc)
+        
+        parts = [p.strip() for p in data.location.split(',')]
+        if len(parts) >= 1: loc.city = parts[0]
+        if len(parts) >= 2: loc.state = parts[1]
+        if len(parts) >= 3: loc.country = parts[2]
+
+    # Handle photos if provided (as URLs)
+    if data.profile_photos:
+        db.query(UserPhoto).filter(UserPhoto.user_id == current_user.id).delete()
+        for idx, url in enumerate(data.profile_photos):
+            photo = UserPhoto(
+                user_id=current_user.id,
+                photo_url=url,
+                is_primary=(idx == 0)
+            )
+            db.add(photo)
+
+    db.add(current_user)
     db.commit()
     db.refresh(current_user)
     return current_user
