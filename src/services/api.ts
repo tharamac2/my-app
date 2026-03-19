@@ -9,7 +9,7 @@ const localIp = debuggerHost?.split(':')[0] || '192.168.0.4';
 
 const API_IP = Platform.OS === 'android' && !debuggerHost ? '10.0.2.2' : localIp;
 // Hardcode to local machine for simulator, or use VITE_API_URL equivalent
-const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:8000/api/v1' : `http://${API_IP}:8000/api/v1`;
+export const BASE_URL = Platform.OS === 'web' ? 'http://127.0.0.1:8000/api/v1' : `http://${API_IP}:8000/api/v1`;
 
 const api = axios.create({
     baseURL: BASE_URL,

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Table, Tag, Space, Button, Input, Modal, message, 
-  Typography, Avatar, Descriptions, Divider, List, Image, Form 
+  Typography, Avatar, Descriptions, Divider, List, Image, Form, Spin 
 } from 'antd';
 import { 
   SearchOutlined, 
@@ -233,13 +233,6 @@ const UserManagement = () => {
               </Descriptions.Item>
             </Descriptions>
 
-            <Divider orientation="left">Family Details</Divider>
-            <Descriptions bordered size="small" column={2}>
-              <Descriptions.Item label="Father">{viewingUser.family?.father_name || 'N/A'}</Descriptions.Item>
-              <Descriptions.Item label="Mother">{viewingUser.family?.mother_name || 'N/A'}</Descriptions.Item>
-              <Descriptions.Item label="Family Type">{viewingUser.family?.family_type || 'N/A'}</Descriptions.Item>
-              <Descriptions.Item label="Siblings">{viewingUser.family?.siblings || 'N/A'}</Descriptions.Item>
-            </Descriptions>
 
             <Divider orientation="left">Photo Gallery</Divider>
             <div className="flex flex-wrap gap-4">

@@ -23,7 +23,7 @@ def format_profile(user: User, current_user_astrology=None) -> DiscoveryProfileO
     age = calculate_age(user.profile.dob) if (user.profile and user.profile.dob) else 0
     
     score = None
-    if current_user_astrology and user.astrology:
+    if current_user_astrology and getattr(user, 'astrology', None):
         try:
             res = calculate_compatibility(
                 current_user_astrology.nakshatra, current_user_astrology.rasi,
@@ -67,7 +67,7 @@ def get_discovery_feed(
     recently_joined = sorted(all_users, key=lambda x: x.created_at, reverse=True)[:10]
     premium = [u for u in all_users if (u.subscription and u.subscription.tier != 'free')][:10]
     
-    my_astro = current_user.astrology
+    my_astro = getattr(current_user, 'astrology', None)
     
     feed_users = all_users[:20] # For recommended and nearby logic
     for u in feed_users:

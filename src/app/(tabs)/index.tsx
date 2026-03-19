@@ -100,7 +100,7 @@ export default function DiscoverScreen() {
     try {
       setLoading(true);
       const response = await api.get('/discovery/feed');
-      setTopMatches(response.data.feed);
+      setTopMatches(response.data.recommended || []);
     } catch (e) {
       console.error(e);
     } finally {

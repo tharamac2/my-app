@@ -26,9 +26,24 @@ class User(Base):
     family = relationship("FamilyDetail", back_populates="user", uselist=False, cascade="all, delete-orphan")
     location = relationship("LocationDetail", back_populates="user", uselist=False, cascade="all, delete-orphan")
     photos = relationship("UserPhoto", back_populates="user", cascade="all, delete-orphan")
-    # preferences = relationship("UserPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    preferences = relationship("UserPreference", back_populates="user", uselist=False, cascade="all, delete-orphan")
     # astrology = relationship("UserAstrology", back_populates="user", uselist=False, cascade="all, delete-orphan")
-    subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    # subscription = relationship("Subscription", back_populates="user", uselist=False, cascade="all, delete-orphan")
+
+class UserPreference(Base):
+    __tablename__ = "user_preferences"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(String(36), ForeignKey("users.id", ondelete="CASCADE"), unique=True)
+    age_range = Column(String(50))
+    height_range = Column(String(50))
+    marital_status = Column(String(50))
+    religion = Column(String(50))
+    caste = Column(String(50))
+    education = Column(String(100))
+    profession = Column(String(100))
+    location = Column(String(100))
+    
+    user = relationship("User", back_populates="preferences")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"

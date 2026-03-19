@@ -58,6 +58,26 @@ class FamilyDetailOut(FamilyDetailBase):
     class Config:
         from_attributes = True
 
+# UserPreference schemas
+class UserPreferenceBase(BaseModel):
+    age_range: Optional[str] = None
+    height_range: Optional[str] = None
+    marital_status: Optional[str] = None
+    religion: Optional[str] = None
+    caste: Optional[str] = None
+    education: Optional[str] = None
+    profession: Optional[str] = None
+    location: Optional[str] = None
+
+class UserPreferenceCreate(UserPreferenceBase):
+    pass
+
+class UserPreferenceOut(UserPreferenceBase):
+    id: int
+    user_id: str
+    class Config:
+        from_attributes = True
+
 # LocationDetail schemas
 class LocationDetailBase(BaseModel):
     country: Optional[str] = "India"
@@ -84,6 +104,7 @@ class ProfileCompleteOut(BaseModel):
     details: Optional[UserDetailOut] = None
     family: Optional[FamilyDetailOut] = None
     location: Optional[LocationDetailOut] = None
+    preferences: Optional[UserPreferenceOut] = None
     class Config:
         from_attributes = True
 
@@ -98,6 +119,14 @@ class CompleteProfileSetup(BaseModel):
     caste: Optional[str] = None
     education: Optional[str] = None
     profession: Optional[str] = None
+
+class ProfileEditAll(BaseModel):
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = None
+    location: Optional[str] = None
+    profession: Optional[str] = None
+    education: Optional[str] = None
     income: Optional[str] = None
     nakshatra: Optional[str] = None
     rasi: Optional[str] = None

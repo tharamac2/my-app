@@ -242,7 +242,7 @@ export default function CreateProfileScreen() {
             await api.put('/profile/me/setup', {
                 full_name: `${firstName} ${lastName}`.trim(),
                 gender: gender,
-                dob: dob ? dob.toISOString() : null,
+                dob: dob ? dob.toISOString().split('T')[0] : null,
                 location: locationStr,
                 height: height,
                 weight: weight,
@@ -257,8 +257,10 @@ export default function CreateProfileScreen() {
             });
             setStep('success');
         } catch (error: any) {
-            console.error('Error submitting profile:', error);
-            Alert.alert('Error', error.response?.data?.error || 'Could not save profile details');
+            console.error('Error submitting profile:', error.response?.data || error);
+            const errDetail = error.response?.data?.detail;
+            const msg = Array.isArray(errDetail) ? errDetail[0].msg : (error.response?.data?.error || 'Could not save profile details');
+            Alert.alert('Error', msg);
         }
     };
 

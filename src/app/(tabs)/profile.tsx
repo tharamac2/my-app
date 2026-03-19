@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Dimensions, Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -56,17 +57,19 @@ export default function ProfileDashboard() {
     const user = useAuthStore((state: any) => state.user);
     const [profileData, setProfileData] = useState<any>(null);
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            try {
-                const res = await api.get('/profile/me');
-                setProfileData(res.data);
-            } catch (error) {
-                console.error("Failed to fetch profile", error);
-            }
-        };
-        fetchProfile();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            const fetchProfile = async () => {
+                try {
+                    const res = await api.get('/profile/me');
+                    setProfileData(res.data);
+                } catch (error) {
+                    console.error("Failed to fetch profile", error);
+                }
+            };
+            fetchProfile();
+        }, [])
+    );
 
     const handleLogout = () => {
         router.replace('/welcome');

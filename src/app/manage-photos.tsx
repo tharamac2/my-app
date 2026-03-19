@@ -1,12 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter } from 'expo-router';
 import React from 'react';
-import api from '../services/api';
+import api, { BASE_URL } from '../services/api';
+import useAuthStore from '../store/authStore';
 import {
     Alert,
     Dimensions,
     Image,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -24,6 +27,8 @@ export default function ManagePhotosScreen() {
     const router = useRouter();
 
     const [photos, setPhotos] = React.useState<any[]>([]);
+    const [deletedPhotos, setDeletedPhotos] = React.useState<string[]>([]);
+    const [isSaving, setIsSaving] = React.useState(false);
 
     React.useEffect(() => {
         api.get('/profile/me')
@@ -31,7 +36,7 @@ export default function ManagePhotosScreen() {
                 if (res.data.photos) {
                     setPhotos(res.data.photos.map((p: any) => ({
                         id: p.id.toString(),
-                        uri: p.url,
+                        uri: p.photo_url || p.url, // ensure backend standard
                         isPrimary: p.is_primary
                     })));
                 }
@@ -82,6 +87,10 @@ export default function ManagePhotosScreen() {
                     text: 'Delete',
                     style: 'destructive',
                     onPress: () => {
+                        const isBackendId = !isNaN(Number(id)) && Number(id) < 1000000000;
+                        if (isBackendId) {
+                            setDeletedPhotos(prev => [...prev, id]);
+                        }
                         setPhotos(current => {
                             const filtered = current.filter(p => p.id !== id);
                             // If we deleted the primary, make the first remaining one primary
@@ -101,7 +110,73 @@ export default function ManagePhotosScreen() {
             ...p,
             isPrimary: p.id === id
         })));
-        Alert.alert('Profile Picture Updated');
+        Alert.alert('Profile Picture Updated', 'Tap Save Photos to apply layout.');
+    };
+
+    const handleSave = async () => {
+        setIsSaving(true);
+        try {
+            // Delete removed photos
+            for (const dId of deletedPhotos) {
+                await api.delete(`/profile/me/photos/${dId}`);
+            }
+
+            // Upload new photos
+            const photosToUpload = photos.filter(p => p.uri.startsWith('file:/') || p.uri.startsWith('content:/') || p.uri.startsWith('ph:/'));
+
+            for (const p of photosToUpload) {
+                const token = useAuthStore.getState().token;
+                
+                // OS-safe URI translation for Expo FileSystem
+                let safeUri = p.uri;
+                if (Platform.OS === 'ios' && !safeUri.startsWith('file://')) {
+                    safeUri = safeUri.replace('file:/', 'file:///');
+                }
+                // Handle edge-case local file protocol loss
+                if (!safeUri.includes('://')) {
+                    safeUri = `file://${safeUri}`;
+                }
+                
+                const response = await FileSystem.uploadAsync(
+                    `${BASE_URL}/profile/me/photos`,
+                    safeUri,
+                    {
+                        fieldName: 'file',
+                        httpMethod: 'POST',
+                        uploadType: 1 as any, // 1 = MULTIPART
+                        headers: {
+                            Authorization: `Bearer ${token}`
+                        }
+                    }
+                );
+                
+                if (response.status !== 200 && response.status !== 201) {
+                    throw new Error(`Upload Failed: ${response.status} - ${response.body}`);
+                }
+                
+                const responseData = JSON.parse(response.body);
+                
+                // If this new photo was the primary one
+                if (p.isPrimary) {
+                    await api.put(`/profile/me/photos/${responseData.id}/primary`);
+                }
+            }
+
+            // Update primary for existing photos (if user swapped primary to an already uploaded photo)
+            const primaryPhoto = photos.find(p => p.isPrimary);
+            if (primaryPhoto && !photosToUpload.includes(primaryPhoto)) {
+                await api.put(`/profile/me/photos/${primaryPhoto.id}/primary`);
+            }
+
+            Alert.alert('Success', 'Gallery updated and saved!', [
+                { text: 'OK', onPress: () => router.back() }
+            ]);
+        } catch (error: any) {
+            console.error(error);
+            Alert.alert('Error', `Failed to save photos: ${error.message || String(error)}`);
+        } finally {
+            setIsSaving(false);
+        }
     };
 
     return (
@@ -145,11 +220,11 @@ export default function ManagePhotosScreen() {
                                 <Image source={{ uri: photo.uri }} style={styles.image} />
                             </TouchableOpacity>
 
-                            {photo.isPrimary && (
+                            {photo.isPrimary ? (
                                 <View style={styles.primaryBadge}>
                                     <Text style={styles.primaryBadgeText}>Profile Pic</Text>
                                 </View>
-                            )}
+                            ) : null}
 
                             <View style={styles.actionRow}>
                                 <TouchableOpacity style={styles.actionBtn} onPress={() => pickImage(photo.id)}>
@@ -178,6 +253,16 @@ export default function ManagePhotosScreen() {
                 </View>
 
             </ScrollView>
+
+            <View style={styles.footer}>
+                <TouchableOpacity 
+                    style={[styles.saveBtn, isSaving && styles.saveBtnDisabled]} 
+                    onPress={handleSave} 
+                    disabled={isSaving}
+                >
+                    <Text style={styles.saveBtnText}>{isSaving ? 'Saving to Database...' : 'Save Photos'}</Text>
+                </TouchableOpacity>
+            </View>
         </SafeAreaView>
     );
 }
@@ -320,5 +405,25 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#666666',
         marginBottom: 6,
+    },
+    footer: {
+        padding: 20,
+        backgroundColor: '#FFFFFF',
+        borderTopWidth: 1,
+        borderTopColor: '#EEEEEE',
+    },
+    saveBtn: {
+        backgroundColor: '#134377',
+        paddingVertical: 16,
+        borderRadius: 12,
+        alignItems: 'center',
+    },
+    saveBtnDisabled: {
+        backgroundColor: '#888888',
+    },
+    saveBtnText: {
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
 });

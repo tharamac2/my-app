@@ -30,18 +30,18 @@ export default function EditProfileScreen() {
         api.get('/profile/me').then((res: any) => {
             const d = res.data;
             setName(d.full_name || '');
-            setBio(d.bio || '');
+            setBio(d.profile?.bio || '');
             setPhone(d.phone || '');
             setEmail(d.email || '');
-            setLocation(d.location || '');
-            setProfession(d.details?.profession || '');
+            setLocation(d.location?.city ? `${d.location.city}, ${d.location.state || ''}`.replace(/,\s*$/, '') : '');
+            setProfession(d.details?.occupation || '');
             setEducation(d.details?.education || '');
         }).catch((err: any) => console.log(err));
     }, []);
 
     const handleSave = async () => {
         try {
-            await api.put('/profile/me/details', {
+            await api.put('/profile/me/edit-all', {
                 full_name: name,
                 bio: bio,
                 phone: phone,

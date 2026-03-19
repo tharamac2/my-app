@@ -188,6 +188,27 @@ def get_user_full_profile(
         "subscription": to_dict(user.subscription)
     }
 
+from pydantic import BaseModel
+from app.core.security import verify_password, get_password_hash
+
+class AdminPasswordUpdate(BaseModel):
+    current_password: str
+    new_password: str
+
+@router.put("/profile/password")
+def update_admin_password(
+    password_in: AdminPasswordUpdate,
+    db: Session = Depends(deps.get_db),
+    admin_user: User = Depends(deps.get_current_admin),
+) -> Any:
+    if not verify_password(password_in.current_password, admin_user.password_hash):
+        raise HTTPException(status_code=400, detail="Incorrect current password")
+    
+    admin_user.password_hash = get_password_hash(password_in.new_password)
+    db.add(admin_user)
+    db.commit()
+    
+    return {"message": "Password updated successfully"}
 @router.post("/users/{user_id}/reset-password")
 def reset_user_password(
     user_id: str,

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Layout, Menu, Button, Space, Typography, Avatar, Badge } from 'antd';
+import { Layout, Menu, Button, Space, Typography, Avatar, Badge, Popover, List, Spin, Dropdown } from 'antd';
 import {
   DashboardOutlined,
   UserOutlined,
@@ -24,17 +24,19 @@ import Subscriptions from './pages/Subscriptions';
 import Notifications from './pages/Notifications';
 import Login from './pages/Login';
 import api from './utils/api';
+import dayjs from 'dayjs';
 
 const { Header, Sider, Content } = Layout;
 const { Title, Text } = Typography;
 
-// Remaining Placeholder Pages
-const Settings = () => <Title level={2}>Admin Settings</Title>;
+import Settings from './pages/Settings';
 
 const App = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -58,6 +60,25 @@ const App = () => {
     checkToken();
   }, []);
 
+  React.useEffect(() => {
+    if (user) {
+      const fetchNotifications = async () => {
+        try {
+          setLoadingNotifs(true);
+          const res = await api.get('/admin/activity-logs');
+          // Sort by newest first and take top 5
+          const sorted = res.data.sort((a, b) => dayjs(b.created_at).unix() - dayjs(a.created_at).unix());
+          setNotifications(sorted.slice(0, 5));
+        } catch (err) {
+          console.error('Failed to load activity for notifications', err);
+        } finally {
+          setLoadingNotifs(false);
+        }
+      };
+      fetchNotifications();
+    }
+  }, [user]);
+
   const handleLogout = () => {
     localStorage.removeItem('admin_token');
     setUser(null);
@@ -71,6 +92,62 @@ const App = () => {
   if (!user && location.pathname !== '/login') {
     return <Routes><Route path="*" element={<Login onLogin={setUser} />} /></Routes>;
   }
+
+  const notificationContent = (
+    <div style={{ width: 320 }}>
+      {loadingNotifs ? (
+        <div className="flex justify-center p-4"><Spin /></div>
+      ) : notifications.length > 0 ? (
+        <List
+          itemLayout="horizontal"
+          dataSource={notifications}
+          renderItem={(item) => (
+            <List.Item className="px-2">
+              <List.Item.Meta
+                title={<span className="text-sm font-semibold">{item.user_name} - {item.activity_type.toUpperCase()}</span>}
+                description={
+                  <div className="text-xs mt-1">
+                    <span className="text-gray-400">{dayjs(item.created_at).format('MMM DD, YYYY HH:mm')}</span>
+                    <p className="mt-1 mb-0 text-gray-600 line-clamp-2">{item.description}</p>
+                  </div>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      ) : (
+        <div className="text-center text-gray-400 p-4">No new notifications</div>
+      )}
+      <div className="text-center mt-2 border-t pt-2">
+        <Button type="link" onClick={() => navigate('/activities')}>View All Activity</Button>
+      </div>
+    </div>
+  );
+
+
+  const userMenuItems = [
+    {
+      key: 'profile',
+      label: 'My Profile',
+      icon: <UserOutlined />,
+    },
+    {
+      key: 'settings',
+      label: 'Settings',
+      icon: <SettingOutlined />,
+      onClick: () => navigate('/settings'),
+    },
+    {
+      type: 'divider',
+    },
+    {
+      key: 'logout',
+      label: 'Log Out',
+      icon: <LogoutOutlined />,
+      danger: true,
+      onClick: handleLogout,
+    },
+  ];
 
   const menuItems = [
     { key: '/', icon: <DashboardOutlined />, label: 'Dashboard' },
@@ -123,16 +200,20 @@ const App = () => {
                   style={{ fontSize: '16px', width: 64, height: 64 }}
                 />
                 <Space size="large" className="pr-4">
-                  <Badge count={5}>
-                    <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px' }} />
-                  </Badge>
-                  <Space className="ml-4 cursor-pointer">
-                    <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#134377' }} />
-                    <div className="hidden sm:block">
-                      <Text strong>{user?.full_name || 'Admin User'}</Text>
-                      <div className="text-xs text-gray-400">Super Admin</div>
+                  <Popover content={notificationContent} title="Activity Notifications" trigger="click" placement="bottomRight">
+                    <Badge count={notifications.length} overflowCount={99} className="cursor-pointer">
+                      <Button type="text" icon={<BellOutlined />} style={{ fontSize: '18px' }} />
+                    </Badge>
+                  </Popover>
+                  <Dropdown menu={{ items: userMenuItems }} trigger={['click']} placement="bottomRight">
+                    <div className="ml-4 cursor-pointer flex items-center gap-3 hover:bg-gray-50 px-2 py-1 rounded-lg transition-colors">
+                      <Avatar icon={<UserOutlined />} style={{ backgroundColor: '#134377' }} />
+                      <div className="hidden sm:flex flex-col justify-center">
+                        <Text strong style={{ lineHeight: '1.2' }}>{user?.full_name || 'Admin User'}</Text>
+                        <Text type="secondary" style={{ fontSize: '12px', lineHeight: '1.2' }}>Super Admin</Text>
+                      </div>
                     </div>
-                  </Space>
+                  </Dropdown>
                 </Space>
               </Header>
               <Content className="m-6 p-6 bg-white rounded-lg shadow-sm min-h-[280px]">

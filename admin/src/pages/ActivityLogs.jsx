@@ -76,7 +76,7 @@ const ActivityLogs = () => {
       title: 'IP Address',
       dataIndex: 'ip_address',
       key: 'ip',
-      render: (ip) => <Text code>{ip}</Text>
+      render: (ip) => ip ? <Text code>{ip}</Text> : <Text type="secondary" italic>Not recorded</Text>
     }
   ];
 
